@@ -34,6 +34,9 @@ Ergebnisse schnell:
 
 ## HTTP server:
 - https://github.com/valyala/fasthttp
+    - don't forget profiling
+	- GOMAXPROCS env variable
+	- https://github.com/valyala/fasthttp#performance-optimization-tips-for-multi-core-systems
 - https://www.techempower.com/benchmarks
 
 ## Data optimizations
@@ -45,8 +48,6 @@ Ergebnisse schnell:
 - save offer as json string in separate varchar column to be able to directly return it in the api response to avoid serialization
 
 ## go optimizations:
-- GOMAXPROCS env variable
-- fasthttp for REST
 
 ## sqlite optimizations:
 - memory mapping, cache size
