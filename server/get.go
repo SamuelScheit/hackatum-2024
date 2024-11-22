@@ -1,19 +1,19 @@
-package main
+package checkmate
 
-import "github.com/valyala/fasthttp"
+import (
+	"bytes"
+	"strconv"
 
-const (
-	carTypeSmall = iota
-	carTypeSports
-	carTypeLuxury
-	carTypeFamily
+	"github.com/valyala/fasthttp"
 )
 
+// OptionalUint represents an optional unsigned integer
 type OptionalUint struct {
 	value uint
 	isSet bool
 }
 
+// GetParams holds the parsed query parameters
 type GetParams struct {
 	regionID              uint
 	timeRangeStart        uint
@@ -32,70 +32,184 @@ type GetParams struct {
 	minFreeKilometer      OptionalUint
 }
 
+func parseUint(value []byte) (uint, error) {
+	v, err := strconv.ParseUint(string(value), 10, 32)
+	return uint(v), err
+}
+
+func parseOptionalUint(value []byte) (OptionalUint, error) {
+	if len(value) == 0 {
+		return OptionalUint{}, nil
+	}
+	v, err := parseUint(value)
+	return OptionalUint{value: v, isSet: err == nil}, err
+}
+
+var keys = map[string][]byte{
+	"regionID":              []byte("regionID"),
+	"timeRangeStart":        []byte("timeRangeStart"),
+	"timeRangeEnd":          []byte("timeRangeEnd"),
+	"numberDays":            []byte("numberDays"),
+	"sortOrder":             []byte("sortOrder"),
+	"page":                  []byte("page"),
+	"pageSize":              []byte("pageSize"),
+	"priceRangeWidth":       []byte("priceRangeWidth"),
+	"minFreeKilometerWidth": []byte("minFreeKilometerWidth"),
+	"minNumberSeats":        []byte("minNumberSeats"),
+	"minPrice":              []byte("minPrice"),
+	"maxPrice":              []byte("maxPrice"),
+	"carType":               []byte("carType"),
+	"onlyVollkasko":         []byte("onlyVollkasko"),
+	"minFreeKilometer":      []byte("minFreeKilometer"),
+}
+
+var carTypes = map[string]int{
+	"small":  1,
+	"sports": 2,
+	"luxury": 3,
+	"family": 4,
+}
+
+func parseArgs(args *fasthttp.Args) GetParams {
+
+	params := &GetParams{}
+	var parseErrors []string
+
+	// Static byte slices for key comparisons
+
+	args.VisitAll(func(key, value []byte) {
+		switch {
+		case bytes.Equal(key, keys["regionID"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid regionID")
+				return
+			}
+			params.regionID = v
+
+		case bytes.Equal(key, keys["timeRangeStart"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid timeRangeStart")
+				return
+			}
+			params.timeRangeStart = v
+
+		case bytes.Equal(key, keys["timeRangeEnd"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid timeRangeEnd")
+				return
+			}
+			params.timeRangeEnd = v
+
+		case bytes.Equal(key, keys["numberDays"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid numberDays")
+				return
+			}
+			params.numberDays = v
+
+		case bytes.Equal(key, keys["sortOrder"]):
+			params.sortOrder = string(value)
+
+		case bytes.Equal(key, keys["page"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid page")
+				return
+			}
+			params.page = v
+
+		case bytes.Equal(key, keys["pageSize"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid pageSize")
+				return
+			}
+			params.pageSize = v
+
+		case bytes.Equal(key, keys["priceRangeWidth"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid priceRangeWidth")
+				return
+			}
+			params.priceRangeWidth = v
+
+		case bytes.Equal(key, keys["minFreeKilometerWidth"]):
+			v, err := parseUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid minFreeKilometerWidth")
+				return
+			}
+			params.minFreeKilometerWidth = v
+
+		case bytes.Equal(key, keys["minNumberSeats"]):
+			v, err := parseOptionalUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid minNumberSeats")
+				return
+			}
+			params.minNumberSeats = v
+
+		case bytes.Equal(key, keys["minPrice"]):
+			v, err := parseOptionalUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid minPrice")
+				return
+			}
+			params.minPrice = v
+
+		case bytes.Equal(key, keys["maxPrice"]):
+			v, err := parseOptionalUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid maxPrice")
+				return
+			}
+			params.maxPrice = v
+
+		case bytes.Equal(key, keys["carType"]):
+			carTypeStr := string(value)
+			if ct, ok := carTypes[carTypeStr]; ok {
+				params.carType = ct
+			} else {
+				parseErrors = append(parseErrors, "Invalid carType")
+			}
+
+		case bytes.Equal(key, keys["onlyVollkasko"]):
+			params.onlyVollkasko = bytes.Equal(value, []byte("true"))
+
+		case bytes.Equal(key, keys["minFreeKilometer"]):
+			v, err := parseOptionalUint(value)
+			if err != nil {
+				parseErrors = append(parseErrors, "Invalid minFreeKilometer")
+				return
+			}
+			params.minFreeKilometer = v
+		}
+	})
+
+	return params
+}
+
 func GetHandler(ctx *fasthttp.RequestCtx) {
-	uri := ctx.URI()
-	args := uri.QueryArgs()
+	args := ctx.URI().QueryArgs()
 
-	// Required parameters
-	regionID, errRegionID := args.GetUint("regionID")
-	timeRangeStart, errTimeRangeStart := args.GetUint("timeRangeStart")
-	timeRangeEnd, errTimeRangeEnd := args.GetUint("timeRangeEnd")
-	numberDays, errNumberDays := args.GetUint("numberDays")
-	sortOrder := string(args.Peek("sortOrder"))
-	page, errPage := args.GetUint("page")
-	pageSize, errPageSize := args.GetUint("pageSize")
-	priceRangeWidth, errPriceRangeWidth := args.GetUint("priceRangeWidth")
-	minFreeKilometerWidth, errMinFreeKilometerWidth := args.GetUint("minFreeKilometerWidth")
+	parseArgs(args)
 
-	// Optional parameters
-	minNumberSeats := args.GetUintOrZero("minNumberSeats")
-	minPrice := args.GetUintOrZero("minPrice")
-	maxPrice := args.GetUintOrZero("maxPrice")
-	carTypeString := string(args.Peek("carType"))
-	onlyVollkasko := args.GetBool("onlyVollkasko")
-	minFreeKilometer := args.GetUintOrZero("minFreeKilometer")
-
-	// Error handling for required parameters
-	if errRegionID != nil || errTimeRangeStart != nil || errTimeRangeEnd != nil ||
-		errNumberDays != nil || errPage != nil || errPageSize != nil ||
-		errPriceRangeWidth != nil || errMinFreeKilometerWidth != nil {
+	// Handle parse errors
+	if len(parseErrors) > 0 {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		ctx.SetBodyString("Missing or invalid required parameters")
+		ctx.SetBodyString("Error parsing parameters: " + strconv.Itoa(len(parseErrors)))
 		return
 	}
 
-	// Validate the sortOrder parameter
-	if sortOrder != "price-asc" && sortOrder != "price-desc" {
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		ctx.SetBodyString("Invalid value for sortOrder")
-		return
-	}
+	// Log or process params
+	println(params.regionID, params.sortOrder, params.carType)
 
-	carType := -1
-
-	// Validate the carType parameter (if provided)
-	switch carTypeString {
-	case "small":
-		carType = carTypeSmall
-	case "sports":
-		carType = carTypeSports
-	case "luxury":
-		carType = carTypeLuxury
-	case "family":
-		carType = carTypeFamily
-	}
-
-	_ = carType
-
-	// Log or process the parameters (debugging purpose)
-	println(
-		regionID, timeRangeStart, timeRangeEnd, numberDays, sortOrder,
-		page, pageSize, priceRangeWidth, minFreeKilometerWidth,
-		minNumberSeats, minPrice, maxPrice, carTypeString,
-		onlyVollkasko, minFreeKilometer,
-	)
-
-	// Respond or further process the data
+	// Respond
 	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetBodyString("Parameters successfully processed")
+	ctx.SetBodyString("Parameters successfully parsed")
 }

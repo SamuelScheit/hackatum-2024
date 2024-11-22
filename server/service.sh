@@ -14,7 +14,7 @@ EOL
 
 
 echo "building checkmate"
-go build .
+/usr/local/go/bin/go build .
 
 echo "enabling systemd service"
 systemctl enable checkmate.service
