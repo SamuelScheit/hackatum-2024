@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"strconv"
 
 	"github.com/valyala/fasthttp"
@@ -75,117 +74,123 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 
 	// Static byte slices for key comparisons
 
-	args.VisitAll(func(key, value []byte) {
-		switch {
-		case bytes.Equal(key, keys["regionID"]):
+	handlers := map[string]func(value []byte){
+		"regionID": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid regionID")
 				return
 			}
 			params.regionID = v
-
-		case bytes.Equal(key, keys["timeRangeStart"]):
+		},
+		"timeRangeStart": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid timeRangeStart")
 				return
 			}
 			params.timeRangeStart = v
-
-		case bytes.Equal(key, keys["timeRangeEnd"]):
+		},
+		"timeRangeEnd": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid timeRangeEnd")
 				return
 			}
 			params.timeRangeEnd = v
-
-		case bytes.Equal(key, keys["numberDays"]):
+		},
+		"numberDays": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid numberDays")
 				return
 			}
 			params.numberDays = v
-
-		case bytes.Equal(key, keys["sortOrder"]):
+		},
+		"sortOrder": func(value []byte) {
 			params.sortOrder = string(value)
-
-		case bytes.Equal(key, keys["page"]):
+		},
+		"page": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid page")
 				return
 			}
 			params.page = v
-
-		case bytes.Equal(key, keys["pageSize"]):
+		},
+		"pageSize": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid pageSize")
 				return
 			}
 			params.pageSize = v
-
-		case bytes.Equal(key, keys["priceRangeWidth"]):
+		},
+		"priceRangeWidth": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid priceRangeWidth")
 				return
 			}
 			params.priceRangeWidth = v
-
-		case bytes.Equal(key, keys["minFreeKilometerWidth"]):
+		},
+		"minFreeKilometerWidth": func(value []byte) {
 			v, err := parseUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid minFreeKilometerWidth")
 				return
 			}
 			params.minFreeKilometerWidth = v
-
-		case bytes.Equal(key, keys["minNumberSeats"]):
+		},
+		"minNumberSeats": func(value []byte) {
 			v, err := parseOptionalUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid minNumberSeats")
 				return
 			}
 			params.minNumberSeats = v
-
-		case bytes.Equal(key, keys["minPrice"]):
+		},
+		"minPrice": func(value []byte) {
 			v, err := parseOptionalUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid minPrice")
 				return
 			}
 			params.minPrice = v
-
-		case bytes.Equal(key, keys["maxPrice"]):
+		},
+		"maxPrice": func(value []byte) {
 			v, err := parseOptionalUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid maxPrice")
 				return
 			}
 			params.maxPrice = v
-
-		case bytes.Equal(key, keys["carType"]):
+		},
+		"carType": func(value []byte) {
 			carTypeStr := string(value)
 			if ct, ok := carTypes[carTypeStr]; ok {
 				params.carType = ct
 			} else {
 				parseErrors = append(parseErrors, "Invalid carType")
 			}
-
-		case bytes.Equal(key, keys["onlyVollkasko"]):
-			params.onlyVollkasko = bytes.Equal(value, []byte("true"))
-
-		case bytes.Equal(key, keys["minFreeKilometer"]):
+		},
+		"onlyVollkasko": func(value []byte) {
+			params.onlyVollkasko = string(value) == "true"
+		},
+		"minFreeKilometer": func(value []byte) {
 			v, err := parseOptionalUint(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid minFreeKilometer")
 				return
 			}
 			params.minFreeKilometer = v
+		},
+	}
+
+	// Visit all arguments and process them
+	args.VisitAll(func(key, value []byte) {
+		if handler, exists := handlers[string(key)]; exists {
+			handler(value)
 		}
 	})
 
