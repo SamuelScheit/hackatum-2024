@@ -6,17 +6,18 @@ Name=checkmate
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/heimdall-aggregator
+ExecStart=/home/challenger/hackatum-2024/server/checkmate
 
 [Install]
 WantedBy=multi-user.target
 EOL
 
+
 echo "building checkmate"
 go build .
 
 echo "enabling systemd service"
-systemctl enable heimdall.service
+systemctl enable checkmate.service
 
 echo "starting systemd service"
-systemctl start heimdall.service
+systemctl start checkmate.service
