@@ -9,20 +9,27 @@ const (
 	carTypeFamily
 )
 
+type OptionalUint struct {
+	value uint
+	isSet bool
+}
+
 type GetParams struct {
-	regionID             uint
-	timeRangeStart       uint
-	timeRangeEnd         uint
-	numberDays           uint
-	sortOrder            string
-	page                 uint
-	pageSize             uint
-	priceRangeWidth      uint
+	regionID              uint
+	timeRangeStart        uint
+	timeRangeEnd          uint
+	numberDays            uint
+	sortOrder             string
+	page                  uint
+	pageSize              uint
+	priceRangeWidth       uint
 	minFreeKilometerWidth uint
-	minNumberSeats       {
-		uint
-		bool
-	}
+	minNumberSeats        OptionalUint
+	minPrice              OptionalUint
+	maxPrice              OptionalUint
+	carType               int
+	onlyVollkasko         bool
+	minFreeKilometer      OptionalUint
 }
 
 func GetHandler(ctx *fasthttp.RequestCtx) {
