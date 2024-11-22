@@ -1,4 +1,4 @@
-package checkmate
+package main
 
 import (
 	"bytes"
@@ -70,9 +70,7 @@ var carTypes = map[string]int{
 	"family": 4,
 }
 
-func parseArgs(args *fasthttp.Args) GetParams {
-
-	params := &GetParams{}
+func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 	var parseErrors []string
 
 	// Static byte slices for key comparisons
@@ -191,18 +189,21 @@ func parseArgs(args *fasthttp.Args) GetParams {
 		}
 	})
 
-	return params
+	return &parseErrors
 }
 
 func GetHandler(ctx *fasthttp.RequestCtx) {
 	args := ctx.URI().QueryArgs()
 
-	parseArgs(args)
+	params := GetParams{}
+	parseErrors := params.parseArgs(args)
 
 	// Handle parse errors
-	if len(parseErrors) > 0 {
+	if len(*parseErrors) > 0 {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		ctx.SetBodyString("Error parsing parameters: " + strconv.Itoa(len(parseErrors)))
+		for _, err := range *parseErrors {
+			ctx.SetBodyString(err + "\n")
+		}
 		return
 	}
 
