@@ -16,7 +16,7 @@ WITH DataWithFilteredRequiredParams as (
 
 SELECT 
     'price_range' AS GroupingType,
-    floor(price / ?) * ?8 AS GroupingValue,
+    (floor(price / ?) * ?8) AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE ( freeKilometers >= COALESCE(?, freeKilometers  ))
@@ -56,7 +56,7 @@ UNION ALL
 
 SELECT 
     'freeKilometerRange' AS GroupingType,
-    floor(freeKilometers / ?) * ?9 AS GroupingValue,
+    (floor(freeKilometers / ?) * ?15) AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE 
@@ -70,7 +70,7 @@ UNION ALL
 
 SELECT 
     'hasVollkasko' AS GroupingType,
-    CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END AS GroupingValue,
+    (CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END) AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE 
