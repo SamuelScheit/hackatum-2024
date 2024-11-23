@@ -2,7 +2,6 @@ package types
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 
 	"github.com/valyala/fasthttp"
@@ -75,10 +74,6 @@ func (params *GetParams) ParseArgs(args *fasthttp.Args) *string {
 	var parseErrors []string
 
 	// Static byte slices for key comparisons
-
-	args.VisitAll(func(key, value []byte) {
-		fmt.Println(string(key), string(value))
-	})
 
 	params.MinNumberSeats = sql.NullInt32{
 		Int32: 0,
