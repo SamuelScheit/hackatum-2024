@@ -200,6 +200,7 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 func GetHandler(ctx *fasthttp.RequestCtx) {
 	args := ctx.URI().QueryArgs()
 
+	// PERF: if necessary, do not use allocation, instead use a params pool
 	params := GetParams{}
 	parseErrors := params.parseArgs(args)
 
