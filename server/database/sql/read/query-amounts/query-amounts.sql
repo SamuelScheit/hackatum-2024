@@ -19,6 +19,10 @@ SELECT
     floor(price / ?) * ?8 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
+WHERE ( freeKilometers >= ? )
+      and (carType = ?)
+      and (numberSeats >= ?)
+      and (? IS NULL OR ?12 = false OR hasVollkasko = true)
 GROUP BY GroupingValue
 
 UNION ALL
@@ -28,6 +32,11 @@ SELECT
     carType AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
+WHERE
+    ( price < ?)
+    and ( price >= ? )
+    and ( freeKilometers >= ?9 )
+    and (numberSeats >= ?11)
 GROUP BY carType
 
 UNION ALL
@@ -37,6 +46,10 @@ SELECT
     CAST(numberSeats AS VARCHAR) AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
+WHERE ( price < ?13 )
+        and ( price >= ?14 )
+        and ( freeKilometers >= ?9 )
+        and (carType = ?10)
 GROUP BY numberSeats
 
 UNION ALL
@@ -46,6 +59,11 @@ SELECT
     floor(freeKilometers / ?) * ?9 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
+WHERE 
+    ( price < ?13)
+    and ( price >= ?14 )
+    and (carType = ?10)
+    and (numberSeats >= ?11)
 GROUP BY GroupingValue
 
 UNION ALL
@@ -55,6 +73,11 @@ SELECT
     CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
+WHERE ( price < ?13)
+        and ( price >= ?14 )
+        and ( freeKilometers >= ?9 )
+        and ( carType = ?10 )
+        and (numberSeats >= ?11)
 GROUP BY hasVollkasko;
 
 
