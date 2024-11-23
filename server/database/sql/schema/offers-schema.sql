@@ -20,4 +20,3 @@ CREATE INDEX IF NOT EXISTS price ON Offers (price DESC);
 CREATE INDEX IF NOT EXISTS carType ON Offers (carType);
 CREATE INDEX IF NOT EXISTS hasVollkasko ON Offers (hasVollkasko);
 CREATE INDEX IF NOT EXISTS freeKilometers ON Offers (freeKilometers);
-CREATE UNIQUE INDEX IF NOT EXISTS carTypeGroup ON Offers (carType);

@@ -19,7 +19,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	if parseError != nil {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		ctx.SetBodyString(*parseError)
-		fmt.Println(parseError)
+		fmt.Println("error get parse", *parseError)
 		return
 	}
 
@@ -28,7 +28,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.SetBodyString("Internal server error")
-		fmt.Println(err)
+		fmt.Println("err search results", err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.SetBodyString("Internal server error")
-		fmt.Println(err)
+		fmt.Println("error query amount", err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.SetBodyString("Internal server error")
-		fmt.Println(err)
+		fmt.Println("error json marshal get", err)
 		return
 	}
 

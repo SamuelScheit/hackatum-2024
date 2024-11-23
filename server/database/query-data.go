@@ -5,6 +5,7 @@ import (
 	"checkmate/types"
 	"database/sql"
 	_ "embed"
+	"fmt"
 )
 
 var queryAsc *sql.Stmt
@@ -46,6 +47,11 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		query = queryDesc
 	}
 
+	fmt.Println("regionMin ", regionMin)
+	fmt.Println("regionMax ", regionMax)
+	fmt.Println("params", params)
+
+	var rows *sql.Rows
 	rows, err := query.Query(
 		regionMin, regionMax,
 		params.TimeRangeEnd,
@@ -67,26 +73,28 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 
 	defer rows.Close()
 
-	// jsonData := []byte("[")
+	jsonData := []byte("[")
 	first := true
 
 	for rows.Next() {
 		var data []byte
+		var price int
 
 		if !first {
-			// jsonData = append(data, commaByte...)
+			jsonData = append(data, commaByte...)
 		}
 
-		err = rows.Scan(&data)
+		err = rows.Scan(&data, &price)
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("data ", data)
 
-		// jsonData = append(jsonData, data...)
+		jsonData = append(jsonData, data...)
 	}
 
-	// jsonData = append(jsonData, ']')
+	jsonData = append(jsonData, ']')
 
-	return nil, nil
+	return jsonData, nil
 
 }

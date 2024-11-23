@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/valyala/fasthttp"
 )
@@ -10,6 +11,8 @@ var API_OFFERS_PATH_BUFFER = []byte("/api/offers")
 
 // request handler in fasthttp style, i.e. just plain function.
 func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
+	fmt.Println("Request URI:", string(ctx.URI().FullURI()))
+
 	if !bytes.Equal(ctx.Path(), API_OFFERS_PATH_BUFFER) {
 		ctx.Error("not found", fasthttp.StatusNotFound)
 		return
@@ -27,5 +30,10 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func Serve() {
-	fasthttp.ListenAndServe(":80", fastHTTPHandler)
+	err := fasthttp.ListenAndServe(":8080", fastHTTPHandler)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Server started on port 8080")
 }

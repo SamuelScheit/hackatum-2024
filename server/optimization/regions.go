@@ -1,11 +1,10 @@
 package optimization
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"os"
 )
 
 type Region struct {
@@ -21,20 +20,12 @@ type LeafBounds struct {
 
 var bounds map[uint]LeafBounds
 
+//go:embed regions.json
+var regionsFile []byte
+
 func buildDict() {
-	file, err := os.Open("regions.json")
-	if err != nil {
-		log.Fatalf("Failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatalf("Failed to read file: %v", err)
-	}
-
 	var root Region
-	err = json.Unmarshal(data, &root)
+	err := json.Unmarshal(regionsFile, &root)
 	if err != nil {
 		log.Fatalf("Failed to parse JSON: %v", err)
 	}
@@ -42,8 +33,6 @@ func buildDict() {
 	bounds = make(map[uint]LeafBounds)
 
 	computeLeafBounds(root)
-
-	printBounds()
 }
 
 func computeLeafBounds(region Region) (uint, uint) {
@@ -52,7 +41,7 @@ func computeLeafBounds(region Region) (uint, uint) {
 		return region.ID, region.ID
 	}
 
-	minID, maxID := ^uint(0)>>1, uint(0)
+	minID, maxID := ^uint(0), uint(0)
 	for _, subregion := range region.Subregions {
 		subMin, subMax := computeLeafBounds(subregion)
 		if subMin < minID {
