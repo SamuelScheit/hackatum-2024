@@ -30,5 +30,5 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 func main() {
 
 	database.Init()
-	fasthttp.ListenAndServe(":8080", fastHTTPHandler)
+	fasthttp.ListenAndServe(":80", fastHTTPHandler)
 }
