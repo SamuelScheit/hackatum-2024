@@ -37,7 +37,7 @@ func test() {
 
 	offers, err := RetrieveAllOffers()
 	if err != nil {
-		log.Fatalf("Error retrieving offers: %v", err)
+		fmt.Errorf("Error retrieving offers: %v", err)
 	}
 
 	for _, offer := range offers {
@@ -98,7 +98,7 @@ func InsertOffers(offers []types.Offer) error {
 		offerJson, err := json.Marshal(searchResultOffer)
 
 		if err != nil {
-			log.Fatalf("failed to marshal offer: %v", err)
+			fmt.Errorf("failed to marshal offer: %v", err)
 			return err
 		}
 
@@ -118,7 +118,7 @@ func InsertOffers(offers []types.Offer) error {
 
 		if err != nil {
 			tx.Rollback()
-			log.Fatalf("failed to execute statement: %v", err)
+			fmt.Errorf("failed to execute statement: %v", err)
 			return err
 		}
 	}

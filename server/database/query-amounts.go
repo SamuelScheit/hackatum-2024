@@ -38,7 +38,7 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 		regionMax,
 		query.TimeRangeEnd,
 		query.TimeRangeStart,
-		query.NumberDays,
+		query.NumberDays*1000*60*60*24,
 		query.PriceRangeWidth,
 		query.MinFreeKilometerWidth,
 	)
