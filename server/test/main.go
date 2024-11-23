@@ -76,9 +76,15 @@ func openLog(filePath string) {
 	}
 	defer file.Close()
 
+	buf := make([]byte, 0, 1024*1024*10) // Erhöhen Sie den Puffer auf 1 MB
 	scanner := bufio.NewScanner(file)
+	scanner.Buffer(buf, 1024*1024*10)
+	i := 0
+
 	for scanner.Scan() {
 		line := scanner.Text()
+		i += 1
+		fmt.Println(i)
 
 		// Parse each JSON line into a LogEntry
 		var entry LogEntry

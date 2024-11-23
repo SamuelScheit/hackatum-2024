@@ -5,7 +5,6 @@ import (
 	"checkmate/types"
 	"database/sql"
 	_ "embed"
-	"fmt"
 )
 
 var queryAsc *sql.Stmt
@@ -87,14 +86,11 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("data ", data)
 
 		jsonData = append(jsonData, data...)
 	}
 
 	jsonData = append(jsonData, ']')
-
-	fmt.Println("jsonData ", string(jsonData))
 
 	return jsonData, nil
 
