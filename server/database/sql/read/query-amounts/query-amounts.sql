@@ -8,8 +8,8 @@ WITH DataWithFilteredRequiredParams as (
         OR (mostSpecificRegionID >= ? AND mostSpecificRegionID <= ?) 
         )
         -- timeRangeEnd, timeRangeStart, numberDays
-        AND ( ? <= endDate )
-        AND ( ? >= startDate )
+        AND ( ? >= endDate )
+        AND ( ? <= startDate )
         AND ( numberOfDays = ? )
 )
 

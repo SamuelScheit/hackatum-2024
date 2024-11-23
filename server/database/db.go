@@ -65,7 +65,7 @@ func initConnection() {
 
 	db = dbconn
 
-	db.Exec("")
+	db.Exec("PRAGMA journal_mode=WAL;")
 }
 
 func CloseConnection() {
