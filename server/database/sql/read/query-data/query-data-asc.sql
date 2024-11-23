@@ -13,8 +13,6 @@ WHERE
     AND ( ? <= endDate )
     AND ( ? >= startDate )
     AND ( numberOfDays = ? )
-    -- pagination: previousPrice
-    AND (price > ?)
 
     -- -- -- optional -- -- -- 
     
@@ -27,7 +25,7 @@ WHERE
     -- carType (optional)
     AND (carType = COALESCE(?, carType))
     -- onlyVollkasko (optional)
-    AND (hasVollkasko = COALESCE(?, hasVollkasko))
+    AND (? IS NULL OR ?12 = false OR hasVollkasko = true)
     -- minFreeKilometer (optional)
     AND (freeKilometers >= COALESCE(?, freeKilometers))
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"checkmate/types"
 
@@ -55,7 +56,7 @@ func Init() {
 
 func initConnection() {
 	log.Printf("INIT db connection, using file %s", DB_FILE_PATH)
-	// os.Remove(DB_FILE_PATH)
+	os.Remove(DB_FILE_PATH)
 
 	dbconn, err := sql.Open("sqlite3", DB_FILE_PATH)
 	if err != nil {
