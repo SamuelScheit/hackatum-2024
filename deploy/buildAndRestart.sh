@@ -1,5 +1,5 @@
 echo "building checkmate"
-/usr/local/go/bin/go build . -tags "sqlite_math_functions"
+/usr/local/go/bin/go build -tags "sqlite_math_functions" .
 
 echo "restarting systemd service"
 systemctl restart checkmate.service
