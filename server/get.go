@@ -236,6 +236,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 		for _, err := range *parseErrors {
 			ctx.SetBodyString(err + "\n")
 		}
+		fmt.Println(parseErrors)
 		return
 	}
 
