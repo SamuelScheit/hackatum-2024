@@ -70,7 +70,7 @@ UNION ALL
 
 SELECT 
     'hasVollkasko' AS GroupingType,
-    CASE WHEN hasVollkasko THEN true ELSE 'false' END AS GroupingValue,
+    CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE 
