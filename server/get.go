@@ -59,6 +59,10 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 
 	// Static byte slices for key comparisons
 
+	args.VisitAll(func(key, value []byte) {
+		fmt.Println(string(key), string(value))
+	})
+
 	handlers := map[string]func(value []byte){
 		"regionID": func(value []byte) {
 			v, err := parseUint(value)
