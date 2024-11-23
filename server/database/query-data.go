@@ -16,7 +16,7 @@ var QUERY_DATA_SQL_ASC string
 //go:embed sql/read/query-data/query-data-desc.sql
 var QUERY_DATA_SQL_DESC string
 
-func initQuery() {
+func initDataQuery() {
 	var err error
 
 	queryAsc, err = db.Prepare(QUERY_DATA_SQL_ASC)
@@ -71,10 +71,10 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 	first := true
 
 	for rows.Next() {
-		var data int
+		var data []byte
 
 		if !first {
-			// data = append(data, commaByte...)
+			// jsonData = append(data, commaByte...)
 		}
 
 		err = rows.Scan(&data)
