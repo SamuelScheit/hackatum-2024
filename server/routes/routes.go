@@ -30,10 +30,10 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func Serve() {
-	err := fasthttp.ListenAndServe(":8080", fastHTTPHandler)
+	err := fasthttp.ListenAndServe(":80", fastHTTPHandler)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Server started on port 8080")
+	fmt.Println("Server started on port 80")
 }
