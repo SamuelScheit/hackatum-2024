@@ -81,8 +81,9 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		var price int
 
 		if !first {
-			jsonData = append(data, commaByte...)
+			jsonData = append(jsonData, commaByte...)
 		}
+		first = false
 
 		err = rows.Scan(&data, &price)
 		if err != nil {
@@ -94,6 +95,8 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 	}
 
 	jsonData = append(jsonData, ']')
+
+	fmt.Println("jsonData ", string(jsonData))
 
 	return jsonData, nil
 
