@@ -21,7 +21,7 @@ WHERE
     -- minPrice (optional)
     AND (price >= COALESCE(?, price))
     -- maxPrice (optional)
-    AND (price <= COALESCE(?, price))
+    AND (price < COALESCE(?, price))
     -- carType (optional)
     AND (carType = COALESCE(?, carType))
     -- onlyVollkasko (optional)
