@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"strconv"
 )
 
 var queryAmounts *sql.Stmt
@@ -14,11 +15,19 @@ var queryAmounts *sql.Stmt
 var QUERY_AMOUNTS_SQL string
 
 func initAmountQuery() {
-	queryAmounts, err := db.Prepare(QUERY_AMOUNTS_SQL)
+	var err error
+	queryAmounts, err = db.Prepare(QUERY_AMOUNTS_SQL)
 	if err != nil {
 		panic(err)
 	}
-	defer queryAmounts.Close()
+}
+
+func convertStringToUint(in string) uint {
+	res, err := strconv.ParseUint(in, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return uint(res)
 }
 
 func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
@@ -29,6 +38,7 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 		regionMax,
 		query.TimeRangeEnd,
 		query.TimeRangeStart,
+		query.NumberDays,
 		query.PriceRangeWidth,
 		query.MinFreeKilometerWidth,
 	)
@@ -44,45 +54,49 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 	vollkaskoCounts := types.VollkaskoCount{}
 
 	for rows.Next() {
-		var fieldName string
-		var value1, value2, count uint
+		var groupingType string
+		var groupingValue string
+		var count uint
 
-		err := rows.Scan(&fieldName, &value1, &value2, &count)
+		err := rows.Scan(&groupingType, &groupingValue, &count)
 		if err != nil {
 			return fmt.Errorf("error scanning row: %w", err)
 		}
 
-		switch fieldName {
+		switch groupingType {
 		case "price_range":
+			_uint := convertStringToUint(groupingValue)
 			priceRanges = append(priceRanges, types.PriceRange{
-				Start: value1,
-				End:   value2,
+				Start: _uint,
+				End:   _uint + query.PriceRangeWidth,
 				Count: count,
 			})
 		case "carType":
-			switch value1 {
-			case 1:
-				carTypeCounts.Small += count
-			case 2:
+			switch groupingValue {
+			case "small":
+				carTypeCounts.Small = count
+			case "sports":
 				carTypeCounts.Sports += count
-			case 3:
+			case "luxury":
 				carTypeCounts.Luxury += count
-			case 4:
+			case "family":
 				carTypeCounts.Family += count
 			}
 		case "numberSeats":
+			_uint := convertStringToUint(groupingValue)
 			seatsCounts = append(seatsCounts, types.SeatsCount{
-				NumberSeats: value1,
+				NumberSeats: _uint,
 				Count:       count,
 			})
 		case "freeKilometerRange":
+			_uint := convertStringToUint(groupingValue)
 			freeKilometerRanges = append(freeKilometerRanges, types.FreeKilometerRange{
-				Start: value1,
-				End:   value2,
+				Start: _uint,
+				End:   _uint + query.MinFreeKilometerWidth,
 				Count: count,
 			})
 		case "hasVollkasko":
-			if value1 == 1 {
+			if groupingValue == "true" {
 				vollkaskoCounts.TrueCount += count
 			} else {
 				vollkaskoCounts.FalseCount += count

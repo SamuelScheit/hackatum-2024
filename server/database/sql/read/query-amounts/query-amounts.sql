@@ -10,7 +10,7 @@ WITH DataWithFilteredRequiredParams as (
 
 SELECT 
     'price_range' AS GroupingType,
-    FLOOR(price / ?) * ?5 AS GroupingValue,
+    floor(price / ?) * ?6 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 GROUP BY GroupingValue
@@ -37,7 +37,7 @@ UNION ALL
 
 SELECT 
     'freeKilometerRange' AS GroupingType,
-    FLOOR(freeKilometers / ?) AS GroupingValue,
+    floor(freeKilometers / ?) * ?7 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 GROUP BY GroupingValue
@@ -60,7 +60,7 @@ GROUP BY hasVollkasko;
 -- -- priceRanges
 
 -- SELECT 
---     FLOOR(price / ?) ?1 AS price_range,
+--     floor(price / ?) ?1 AS price_range,
 --     COUNT(*) AS count
 -- FROM DataWithFilteredRequiredParams 
 -- GROUP BY price_range
@@ -95,7 +95,7 @@ GROUP BY hasVollkasko;
 -- -- freeKilometerRange
 
 -- SELECT 
---     FLOOR(freeKilometers / ?) AS freeKilometerRange,
+--     floor(freeKilometers / ?) AS freeKilometerRange,
 --     COUNT(*) AS count
 -- FROM DataWithFilteredRequiredParams 
 -- GROUP BY freeKilometerRange

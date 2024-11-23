@@ -22,7 +22,7 @@ type OptimizedSearchResultOffer struct {
 	Data []byte
 }
 
-func (u *OptimizedSearchResultOffer) MarshalJSON() ([]byte, error) {
+func (u OptimizedSearchResultOffer) MarshalJSON() ([]byte, error) {
 	return u.Data, nil
 }
 

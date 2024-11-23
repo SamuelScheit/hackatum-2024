@@ -59,7 +59,7 @@ func initConnection() {
 
 	dbconn, err := sql.Open("sqlite3", DB_FILE_PATH)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	db = dbconn
@@ -119,6 +119,7 @@ func InsertOffers(offers []types.Offer) error {
 		if err != nil {
 			tx.Rollback()
 			log.Fatalf("failed to execute statement: %v", err)
+			return err
 		}
 	}
 

@@ -22,7 +22,7 @@ type GetParams struct {
 	MinNumberSeats        sql.NullInt32
 	MinPrice              sql.NullInt32
 	MaxPrice              sql.NullInt32
-	CarType               sql.NullInt32
+	CarType               sql.NullString
 	OnlyVollkasko         sql.NullBool
 	MinFreeKilometer      sql.NullInt32
 }
@@ -92,9 +92,9 @@ func (params *GetParams) ParseArgs(args *fasthttp.Args) *string {
 		Int32: 0,
 		Valid: false,
 	}
-	params.CarType = sql.NullInt32{
-		Int32: 0,
-		Valid: false,
+	params.CarType = sql.NullString{
+		String: "",
+		Valid:  false,
 	}
 	params.OnlyVollkasko = sql.NullBool{
 		Bool:  false,
@@ -204,10 +204,10 @@ func (params *GetParams) ParseArgs(args *fasthttp.Args) *string {
 			params.MaxPrice = v
 		},
 		"carType": func(value []byte) {
-			if ct, ok := carTypes[string(value)]; ok {
-				params.CarType = sql.NullInt32{
-					Int32: int32(ct),
-					Valid: true,
+			if _, ok := carTypes[string(value)]; ok {
+				params.CarType = sql.NullString{
+					String: string(value),
+					Valid:  true,
 				}
 			} else {
 				parseErrors = append(parseErrors, "Invalid carType")
@@ -237,10 +237,15 @@ func (params *GetParams) ParseArgs(args *fasthttp.Args) *string {
 	})
 
 	var parseError string
+	var parseErrorPtr *string = nil
 
 	for _, err := range parseErrors {
 		parseError += err + ", "
 	}
 
-	return &parseError
+	if parseError != "" {
+		parseErrorPtr = &parseError
+	}
+
+	return parseErrorPtr
 }
