@@ -64,6 +64,8 @@ func initConnection() {
 	}
 
 	db = dbconn
+
+	db.Exec("")
 }
 
 func CloseConnection() {
