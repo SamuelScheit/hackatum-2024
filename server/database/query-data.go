@@ -65,6 +65,7 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		params.OnlyVollkasko,
 		params.MinFreeKilometer,
 		params.PageSize,
+		params.Page*params.PageSize,
 	)
 
 	if err != nil {

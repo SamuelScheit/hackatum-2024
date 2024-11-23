@@ -29,4 +29,5 @@ WHERE
 ORDER BY -- sortorder
     price ASC
 
-LIMIT ? -- pagesize
+LIMIT ? 
+OFFSET ?
