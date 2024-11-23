@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS Offers (
     endDate INTEGER NOT NULL,  
     numberSeats INTEGER NOT NULL,
     price INTEGER NOT NULL,
-    carType INTEGER NOT NULL,
+    carType varchar(6) NOT NULL,
     hasVollkasko BOOLEAN NOT NULL,
     freeKilometers INTEGER NOT NULL,
     numberOfDays INTEGER NOT NULL, -- our calculated field
