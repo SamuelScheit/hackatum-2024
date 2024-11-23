@@ -34,15 +34,21 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 	regionMin, regionMax, regionMin2, regionMax2 := optimization.GetRegionBounds(query.RegionID)
 
 	rows, err := queryAmounts.Query(
-		regionMin,
-		regionMax,
-		regionMin2,
-		regionMax2,
-		query.TimeRangeEnd,
-		query.TimeRangeStart,
-		query.NumberDays*1000*60*60*24,
-		query.PriceRangeWidth,
-		query.MinFreeKilometerWidth,
+		regionMin,                      //1
+		regionMax,                      //2
+		regionMin2,                     //3
+		regionMax2,                     //4
+		query.TimeRangeEnd,             //5
+		query.TimeRangeStart,           //6
+		query.NumberDays*1000*60*60*24, //7
+		query.PriceRangeWidth,          //8
+		query.MinFreeKilometer,         // 9
+		query.CarType,                  // 10
+		query.MinNumberSeats,           // 11
+		query.OnlyVollkasko,            // 12
+		query.MaxPrice,                 // 13
+		query.MinPrice,                 // 14
+		query.MinFreeKilometerWidth,    // 15
 	)
 	if err != nil {
 		return fmt.Errorf("error executing query: %w", err)
