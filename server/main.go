@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"checkmate/database"
 
 	"github.com/valyala/fasthttp"
 )
@@ -15,10 +16,17 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	GetHandler(ctx)
+	if ctx.IsGet() {
+		GetHandler(ctx)
+	} else if ctx.IsPost() {
+		PostHandler(ctx)
+	} else {
+		ctx.Error("Unsupported method", fasthttp.StatusMethodNotAllowed)
+	}
 }
 
 func main() {
 
+	database.Init()
 	fasthttp.ListenAndServe(":8080", fastHTTPHandler)
 }

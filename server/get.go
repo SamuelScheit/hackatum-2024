@@ -1,6 +1,9 @@
 package main
 
 import (
+	"checkmate/database"
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/valyala/fasthttp"
@@ -42,24 +45,6 @@ func parseOptionalUint(value []byte) (OptionalUint, error) {
 	}
 	v, err := parseUint(value)
 	return OptionalUint{value: v, isSet: err == nil}, err
-}
-
-var keys = map[string][]byte{
-	"regionID":              []byte("regionID"),
-	"timeRangeStart":        []byte("timeRangeStart"),
-	"timeRangeEnd":          []byte("timeRangeEnd"),
-	"numberDays":            []byte("numberDays"),
-	"sortOrder":             []byte("sortOrder"),
-	"page":                  []byte("page"),
-	"pageSize":              []byte("pageSize"),
-	"priceRangeWidth":       []byte("priceRangeWidth"),
-	"minFreeKilometerWidth": []byte("minFreeKilometerWidth"),
-	"minNumberSeats":        []byte("minNumberSeats"),
-	"minPrice":              []byte("minPrice"),
-	"maxPrice":              []byte("maxPrice"),
-	"carType":               []byte("carType"),
-	"onlyVollkasko":         []byte("onlyVollkasko"),
-	"minFreeKilometer":      []byte("minFreeKilometer"),
 }
 
 var carTypes = map[string]int{
@@ -167,8 +152,7 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 			params.maxPrice = v
 		},
 		"carType": func(value []byte) {
-			carTypeStr := string(value)
-			if ct, ok := carTypes[carTypeStr]; ok {
+			if ct, ok := carTypes[string(value)]; ok {
 				params.carType = ct
 			} else {
 				parseErrors = append(parseErrors, "Invalid carType")
@@ -197,6 +181,49 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 	return &parseErrors
 }
 
+type Response struct {
+	Offers             []SearchResultOffer  `json:"offers" validate:"required"`
+	PriceRanges        []PriceRange         `json:"priceRanges" validate:"required"`
+	CarTypeCounts      CarTypeCount         `json:"carTypeCounts" validate:"required"`
+	SeatsCount         []SeatsCount         `json:"seatsCount" validate:"required"`
+	FreeKilometerRange []FreeKilometerRange `json:"freeKilometerRange" validate:"required"`
+	VollkaskoCount     VollkaskoCount       `json:"vollkaskoCount" validate:"required"`
+}
+
+type SearchResultOffer struct {
+	ID   string `json:"ID"`
+	Data string `json:"data"`
+}
+
+type PriceRange struct {
+	Start uint `json:"start"`
+	End   uint `json:"end"`
+	Count uint `json:"count"`
+}
+
+type CarTypeCount struct {
+	Small  uint `json:"small"`
+	Sports uint `json:"sports"`
+	Luxury uint `json:"luxury"`
+	Family uint `json:"family"`
+}
+
+type SeatsCount struct {
+	NumberSeats uint `json:"numberSeats"`
+	Count       uint `json:"count"`
+}
+
+type FreeKilometerRange struct {
+	Start uint `json:"start"`
+	End   uint `json:"end"`
+	Count uint `json:"count"`
+}
+
+type VollkaskoCount struct {
+	TrueCount  uint `json:"trueCount"`
+	FalseCount uint `json:"falseCount"`
+}
+
 func GetHandler(ctx *fasthttp.RequestCtx) {
 	args := ctx.URI().QueryArgs()
 
@@ -204,7 +231,6 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	params := GetParams{}
 	parseErrors := params.parseArgs(args)
 
-	// Handle parse errors
 	if len(*parseErrors) > 0 {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		for _, err := range *parseErrors {
@@ -213,10 +239,58 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	// Log or process params
-	println(params.regionID, params.sortOrder, params.carType)
+	offers, err := database.RetrieveAllOffers()
 
-	// Respond
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetBodyString("Internal server error")
+		fmt.Println(err)
+		return
+	}
+
+	searchResults := make([]SearchResultOffer, 0)
+
+	for _, offer := range offers {
+		searchResults = append(searchResults, SearchResultOffer{
+			ID:   offer.ID,
+			Data: offer.Data,
+		})
+	}
+
+	response := Response{
+		Offers: searchResults,
+		PriceRanges: []PriceRange{
+			{Start: 1, End: 2, Count: 3},
+		},
+		CarTypeCounts: CarTypeCount{
+			Small:  1,
+			Sports: 2,
+			Luxury: 3,
+			Family: 4,
+		},
+		SeatsCount: []SeatsCount{
+			{NumberSeats: 1, Count: 2},
+		},
+		FreeKilometerRange: []FreeKilometerRange{
+			{Start: 1, End: 2, Count: 3},
+		},
+		VollkaskoCount: VollkaskoCount{
+			TrueCount:  1,
+			FalseCount: 2,
+		},
+	}
+
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetBodyString("Internal server error")
+		fmt.Println(err)
+		return
+	}
+
+	ctx.Response.Header.Set("Content-Type", "application/json")
+
 	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetBodyString("Parameters successfully parsed")
+	ctx.SetBody(responseJSON)
+
 }

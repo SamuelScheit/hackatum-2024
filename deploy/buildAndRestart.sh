@@ -1,7 +1,7 @@
 echo "building checkmate"
 /usr/local/go/bin/go build .
 
-echo "restarging systemd service"
+echo "restarting systemd service"
 systemctl restart checkmate.service
 
 sleep 2
