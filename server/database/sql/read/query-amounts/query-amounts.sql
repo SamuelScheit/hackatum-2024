@@ -1,8 +1,12 @@
 
 WITH DataWithFilteredRequiredParams as (
     SELECT * FROM Offers WHERE
-        -- regionID_MIN, regionID_MAX
+        -- regionID_MIN, regionID_MAX, 
+        -- regionID_MIN2, regionID_MAX2
+        (
         (mostSpecificRegionID >= ? AND mostSpecificRegionID <= ?) 
+        OR (mostSpecificRegionID >= ? AND mostSpecificRegionID <= ?) 
+        )
         -- timeRangeEnd, timeRangeStart, numberDays
         AND ( ? <= endDate )
         AND ( ? >= startDate )

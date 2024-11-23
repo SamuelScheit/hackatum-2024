@@ -65,10 +65,43 @@ func printBounds() {
 
 func Init() {
 	buildDict()
+	printBounds()
+	printParsedStructure()
 }
 
-func GetRegionBounds(region uint) (uint, uint) {
+func GetRegionBounds(region uint) (uint, uint, uint, uint) {
 	r := bounds[region]
 
-	return r.Min, r.Max
+	if region == 6 {
+		return 56, 57, 121, 124
+	}
+
+	return r.Min, r.Max, r.Min, r.Max
+}
+
+func printRegionStructure(region Region, level int) {
+	// Indentation based on level to show hierarchy
+	indent := ""
+	for i := 0; i < level; i++ {
+		indent += "  "
+	}
+
+	// Print the current region
+	fmt.Printf("%sRegion ID: %d, Name: %s\n", indent, region.ID, region.Name)
+
+	// Recursively print subregions
+	for _, subregion := range region.Subregions {
+		printRegionStructure(subregion, level+1)
+	}
+}
+
+func printParsedStructure() {
+	var root Region
+	err := json.Unmarshal(regionsFile, &root)
+	if err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
+
+	fmt.Println("Parsed Region Structure:")
+	printRegionStructure(root, 0) // Start from the root at level 0
 }
