@@ -26,6 +26,9 @@ var INSERT_OFFER_SQL string
 //go:embed sql/select-offers.sql
 var SELECT_ALL_OFFERS_SQL string
 
+//go:embed sql/delete-offers.sql
+var DELTE_ALL_OFFERS_SQL string
+
 func test() {
 	Init()
 	defer CloseConnection()
@@ -144,4 +147,25 @@ func RetrieveAllOffers() ([]types.Offer, error) {
 	}
 
 	return offers, nil
+}
+
+func DeleteAllOffers() error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	_, err = tx.Exec(DELTE_ALL_OFFERS_SQL)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to delete all offers: %v", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	return nil
 }
