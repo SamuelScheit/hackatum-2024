@@ -13,6 +13,19 @@ type Offer struct {
 	FreeKilometers       int    `json:"freeKilometers"`
 }
 
+type SearchResultOffer struct {
+	ID   string `json:"ID"`
+	Data string `json:"data"`
+}
+
+type OptimizedSearchResultOffer struct {
+	Data []byte
+}
+
+func (u *OptimizedSearchResultOffer) MarshalJSON() ([]byte, error) {
+	return u.Data, nil
+}
+
 var MockOffers = []Offer{
 	{
 		ID:                   "1e8400e2-29b4-4d41-716a-446655440000",

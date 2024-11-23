@@ -55,6 +55,7 @@ Ergebnisse schnell:
 - batching
 - prepared statement
 - cached statement
+- json1 statements
 
 ## OS optimizations:
 - page size
@@ -62,3 +63,54 @@ Ergebnisse schnell:
 - tcp: buffer size, timeout, keepalive
 - ulimit: open files, max processes
 - kernel: max connections, max threads, max memory, max file handles
+
+
+# Suchparameteroptimierung
+
+## Regions
+
+- O(1) Dictionarylookup
+- mappen eine region auf alle leaf regions die drin sind
+- + eventuell min max der leafs
+
+## Timerangestart, Timerangeend, numberOfDays
+
+- Idee: Schnittmenge von zwei tages abschnitten
+- R*Star
+- z.start_date <= p.query_end AND z.end_date >= p.query_start
+
+## sortOrder
+
+- price index, sql orderby
+
+## page, pageSize
+
+- https://stackoverflow.com/questions/109232/what-is-the-best-way-to-paginate-results-in-sql-server
+- seek method / keyset pagination
+
+## praceRangeWidth
+
+```
+SELECT 
+    FLOOR(price / 500) * 500 AS price_range_start,
+    FLOOR(price / 500) * 500 + 499 AS price_range_end,
+    COUNT(*) AS num_items
+FROM 
+    products
+GROUP BY 
+    FLOOR(price / 500)
+ORDER BY 
+    price_range_start;
+```
+
+## minFreeKilometerWidth
+
+- same as pricerangewidth
+
+## minNumberSeats, minPrice, maxPrice, minFreeKilometer
+
+- easy '>' comparison
+
+## carType
+
+- use integer for cartype and convert to
