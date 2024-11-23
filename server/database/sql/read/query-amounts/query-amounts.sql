@@ -8,43 +8,110 @@ WITH DataWithFilteredRequiredParams as (
 )
 
 
--- priceRanges
+SELECT 
+    'price_range' AS GroupingType,
+    FLOOR(price / ?) * ?5 AS GroupingValue,
+    COUNT(*) AS Count
+FROM DataWithFilteredRequiredParams
+GROUP BY GroupingValue
+
+UNION ALL
 
 SELECT 
-    FLOOR(price / ?) AS price_range,
-    COUNT(*) AS count
-FROM DataWithFilteredRequiredParams 
-GROUP BY price_range
+    'carType' AS GroupingType,
+    carType AS GroupingValue,
+    COUNT(*) AS Count
+FROM DataWithFilteredRequiredParams
+GROUP BY carType
 
-
--- carTypeCounts
--- -- small
--- -- sports
--- -- luxury
--- -- family
+UNION ALL
 
 SELECT 
-    carType,
-    COUNT(*) AS count
-FROM 
-    DataWithFilteredRequiredParams 
-GROUP BY 
-    carType
-ORDER BY 
-    carType;
-
-
--- seatsCount
-
-SELECT 
-    numberSeats,
-    COUNT(*) AS count
-FROM DataWithFilteredRequiredParams 
+    'numberSeats' AS GroupingType,
+    CAST(numberSeats AS VARCHAR) AS GroupingValue,
+    COUNT(*) AS Count
+FROM DataWithFilteredRequiredParams
 GROUP BY numberSeats
 
+UNION ALL
 
--- freeKilometerRange
+SELECT 
+    'freeKilometerRange' AS GroupingType,
+    FLOOR(freeKilometers / ?) AS GroupingValue,
+    COUNT(*) AS Count
+FROM DataWithFilteredRequiredParams
+GROUP BY GroupingValue
 
--- vollkaskoCount
--- -- true
--- -- false
+UNION ALL
+
+SELECT 
+    'hasVollkasko' AS GroupingType,
+    CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END AS GroupingValue,
+    COUNT(*) AS Count
+FROM DataWithFilteredRequiredParams
+GROUP BY hasVollkasko;
+
+
+
+
+
+
+
+-- -- priceRanges
+
+-- SELECT 
+--     FLOOR(price / ?) ?1 AS price_range,
+--     COUNT(*) AS count
+-- FROM DataWithFilteredRequiredParams 
+-- GROUP BY price_range
+
+
+-- -- carTypeCounts
+-- -- -- small
+-- -- -- sports
+-- -- -- luxury
+-- -- -- family
+
+-- SELECT 
+--     carType,
+--     COUNT(*) AS count
+-- FROM 
+--     DataWithFilteredRequiredParams 
+-- GROUP BY 
+--     carType
+-- ORDER BY 
+--     carType;
+
+
+-- -- seatsCount
+
+-- SELECT 
+--     numberSeats,
+--     COUNT(*) AS count
+-- FROM DataWithFilteredRequiredParams 
+-- GROUP BY numberSeats
+
+
+-- -- freeKilometerRange
+
+-- SELECT 
+--     FLOOR(freeKilometers / ?) AS freeKilometerRange,
+--     COUNT(*) AS count
+-- FROM DataWithFilteredRequiredParams 
+-- GROUP BY freeKilometerRange
+
+
+-- -- vollkaskoCount
+-- -- -- true
+-- -- -- false
+
+-- SELECT
+--     (SELECT 
+--     COUNT(*) as count
+--     FROM DataWithFilteredRequiredParams
+--     WHERE hasVollkasko = true) as trueCount,
+--     (SELECT
+--     COUNT(*) as count
+--     FROM DataWithFilteredRequiredParams
+--     WHERE hasVollkasko = false) as falseCount
+    

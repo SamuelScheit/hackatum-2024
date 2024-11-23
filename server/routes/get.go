@@ -9,44 +9,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type Response struct {
-	Offers             types.OptimizedSearchResultOffer `json:"offers" validate:"required"`
-	PriceRanges        []PriceRange                     `json:"priceRanges" validate:"required"`
-	CarTypeCounts      CarTypeCount                     `json:"carTypeCounts" validate:"required"`
-	SeatsCount         []SeatsCount                     `json:"seatsCount" validate:"required"`
-	FreeKilometerRange []FreeKilometerRange             `json:"freeKilometerRange" validate:"required"`
-	VollkaskoCount     VollkaskoCount                   `json:"vollkaskoCount" validate:"required"`
-}
-
-type PriceRange struct {
-	Start uint `json:"start"`
-	End   uint `json:"end"`
-	Count uint `json:"count"`
-}
-
-type CarTypeCount struct {
-	Small  uint `json:"small"`
-	Sports uint `json:"sports"`
-	Luxury uint `json:"luxury"`
-	Family uint `json:"family"`
-}
-
-type SeatsCount struct {
-	NumberSeats uint `json:"numberSeats"`
-	Count       uint `json:"count"`
-}
-
-type FreeKilometerRange struct {
-	Start uint `json:"start"`
-	End   uint `json:"end"`
-	Count uint `json:"count"`
-}
-
-type VollkaskoCount struct {
-	TrueCount  uint `json:"trueCount"`
-	FalseCount uint `json:"falseCount"`
-}
-
 func GetHandler(ctx *fasthttp.RequestCtx) {
 	args := ctx.URI().QueryArgs()
 
@@ -63,29 +25,39 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 
 	searchResults, err := database.QuerySearchResults(params)
 
-	response := Response{
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetBodyString("Internal server error")
+		fmt.Println(err)
+		return
+	}
+
+	response := types.QueryResponse{
 		Offers: types.OptimizedSearchResultOffer{
 			Data: searchResults,
 		},
-		PriceRanges: []PriceRange{
-			{Start: 1, End: 2, Count: 3},
+		PriceRanges: []types.PriceRange{},
+		CarTypeCounts: types.CarTypeCount{
+			Small:  0,
+			Sports: 0,
+			Luxury: 0,
+			Family: 0,
 		},
-		CarTypeCounts: CarTypeCount{
-			Small:  1,
-			Sports: 2,
-			Luxury: 3,
-			Family: 4,
+		SeatsCount:         []types.SeatsCount{},
+		FreeKilometerRange: []types.FreeKilometerRange{},
+		VollkaskoCount: types.VollkaskoCount{
+			TrueCount:  0,
+			FalseCount: 0,
 		},
-		SeatsCount: []SeatsCount{
-			{NumberSeats: 1, Count: 2},
-		},
-		FreeKilometerRange: []FreeKilometerRange{
-			{Start: 1, End: 2, Count: 3},
-		},
-		VollkaskoCount: VollkaskoCount{
-			TrueCount:  1,
-			FalseCount: 2,
-		},
+	}
+
+	err = database.QueryAmount(params, &response)
+
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetBodyString("Internal server error")
+		fmt.Println(err)
+		return
 	}
 
 	responseJSON, err := json.Marshal(response)

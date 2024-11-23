@@ -1,4 +1,4 @@
-SELECT price
+SELECT json, price
 FROM Offers
 WHERE
     -- -- -- required -- -- --

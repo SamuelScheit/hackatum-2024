@@ -48,7 +48,8 @@ func test() {
 func Init() {
 	initConnection()
 	createOffersSchema()
-	initQuery()
+	initDataQuery()
+	initAmountQuery()
 	// DeleteAllOffers()
 }
 
