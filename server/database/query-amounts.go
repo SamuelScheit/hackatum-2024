@@ -31,11 +31,13 @@ func convertStringToUint(in string) uint {
 }
 
 func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
-	regionMin, regionMax := optimization.GetRegionBounds(query.RegionID)
+	regionMin, regionMax, regionMin2, regionMax2 := optimization.GetRegionBounds(query.RegionID)
 
 	rows, err := queryAmounts.Query(
 		regionMin,
 		regionMax,
+		regionMin2,
+		regionMax2,
 		query.TimeRangeEnd,
 		query.TimeRangeStart,
 		query.NumberDays*1000*60*60*24,

@@ -37,7 +37,7 @@ func initDataQuery() {
 var commaByte = []byte(",")
 
 func QuerySearchResults(params types.GetParams) ([]byte, error) {
-	regionMin, regionMax := optimization.GetRegionBounds(params.RegionID)
+	regionMin, regionMax, regionMin2, regionMax2 := optimization.GetRegionBounds(params.RegionID)
 
 	var query *sql.Stmt
 
@@ -47,13 +47,10 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		query = queryDesc
 	}
 
-	fmt.Println("regionMin ", regionMin)
-	fmt.Println("regionMax ", regionMax)
-	fmt.Println("params", params)
-
 	var rows *sql.Rows
 	rows, err := query.Query(
 		regionMin, regionMax,
+		regionMin2, regionMax2,
 		params.TimeRangeEnd,
 		params.TimeRangeStart,
 		params.NumberDays*1000*60*60*24,
