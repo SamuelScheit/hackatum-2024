@@ -16,7 +16,7 @@ WITH DataWithFilteredRequiredParams as (
 
 SELECT 
     'price_range' AS GroupingType,
-    floor(price / ?) * ?6 AS GroupingValue,
+    floor(price / ?) * ?8 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 GROUP BY GroupingValue
@@ -43,7 +43,7 @@ UNION ALL
 
 SELECT 
     'freeKilometerRange' AS GroupingType,
-    floor(freeKilometers / ?) * ?7 AS GroupingValue,
+    floor(freeKilometers / ?) * ?9 AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 GROUP BY GroupingValue
