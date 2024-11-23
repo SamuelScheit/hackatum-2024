@@ -33,7 +33,8 @@ WHERE
 
 
 ORDER BY -- sortorder
-    price ASC
+    price ASC,
+    id ASC
 
 LIMIT ? 
 OFFSET ?
