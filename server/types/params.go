@@ -63,13 +63,6 @@ var carTypes = map[string]int{
 	"family": 4,
 }
 
-const (
-	CarTypeSmall  = 1
-	CarTypeSports = 2
-	CarTypeLuxury = 3
-	CarTypeFamily = 4
-)
-
 func (params *GetParams) ParseArgs(args *fasthttp.Args) *string {
 	var parseErrors []string
 
