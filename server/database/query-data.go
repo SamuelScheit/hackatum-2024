@@ -53,7 +53,6 @@ func QuerySearchResults(params types.GetParams) ([]byte, error) {
 		params.TimeRangeEnd,
 		params.TimeRangeStart,
 		params.NumberDays*1000*60*60*24,
-		0,
 		params.MinNumberSeats,
 		params.MinPrice,
 		params.MaxPrice,
