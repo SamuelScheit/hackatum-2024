@@ -34,7 +34,8 @@ WHERE
 
 
 ORDER BY -- sortorder
-    price DESC
+    price DESC,
+    id ASC
 
 LIMIT ? 
 OFFSET ?
