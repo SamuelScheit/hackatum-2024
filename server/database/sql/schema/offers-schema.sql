@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS Offers (
     carType INTEGER NOT NULL,
     hasVollkasko BOOLEAN NOT NULL,
     freeKilometers INTEGER NOT NULL,
+    numberOfDays INTEGER NOT NULL, -- our calculated field
     json BLOB NOT NULL
 );
 CREATE INDEX IF NOT EXISTS mostSpecificRegionID ON Offers (mostSpecificRegionID ASC);

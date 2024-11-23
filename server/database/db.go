@@ -102,6 +102,8 @@ func InsertOffers(offers []types.Offer) error {
 			return err
 		}
 
+		numberOfDays := offer.EndDate - offer.StartDate
+
 		_, err = stmt.Exec(
 			offer.ID,
 			offer.Data,
@@ -113,6 +115,7 @@ func InsertOffers(offers []types.Offer) error {
 			offer.CarType,
 			offer.HasVollkasko,
 			offer.FreeKilometers,
+			numberOfDays,
 			offerJson,
 		)
 
