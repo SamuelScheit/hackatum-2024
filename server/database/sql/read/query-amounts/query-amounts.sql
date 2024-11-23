@@ -33,8 +33,8 @@ SELECT
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE
-    CASE WHEN price THEN 'true' ELSE ( price < ?) END 
-    and (price >= ?)
+    CASE WHEN ? IS NULL THEN true ELSE ( price < ?13) END 
+    and (price >= COALESCE(?, price))
     and (freeKilometers >= COALESCE(?9, freeKilometers))
     and (numberSeats >= COALESCE(?11, numberSeats))
 GROUP BY carType
@@ -46,7 +46,7 @@ SELECT
     CAST(numberSeats AS VARCHAR) AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
-WHERE CASE WHEN price THEN 'true' ELSE ( price < ?13) END 
+WHERE CASE WHEN ?13 IS NULL THEN true ELSE ( price < ?13) END 
         and (price >= COALESCE(?14, price)) 
         and (freeKilometers >= COALESCE(?9, freeKilometers))
         and (carType = COALESCE(?10, carType))
@@ -60,7 +60,7 @@ SELECT
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE 
-    CASE WHEN price THEN 'true' ELSE ( price < ?13) END 
+    CASE WHEN ?13 IS NULL THEN true ELSE ( price < ?13) END 
     and (price >= COALESCE(?14, price)) 
     and (carType = COALESCE(?10, carType))
     and (numberSeats >= COALESCE(?11, numberSeats))
@@ -70,11 +70,11 @@ UNION ALL
 
 SELECT 
     'hasVollkasko' AS GroupingType,
-    CASE WHEN hasVollkasko THEN 'true' ELSE 'false' END AS GroupingValue,
+    CASE WHEN hasVollkasko THEN true ELSE 'false' END AS GroupingValue,
     COUNT(*) AS Count
 FROM DataWithFilteredRequiredParams
 WHERE 
-    CASE WHEN price THEN 'true' ELSE ( price < ?13) END 
+    CASE WHEN ?13 IS NULL THEN true ELSE ( price < ?13) END 
     and (price >= COALESCE(?14, price)) 
     and (freeKilometers >= COALESCE(?9, freeKilometers))
     and (carType = COALESCE(?10, carType))
