@@ -20,6 +20,8 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 		GetHandler(ctx)
 	} else if ctx.IsPost() {
 		PostHandler(ctx)
+	} else if ctx.IsDelete() {
+		DeleteHandler(ctx)
 	} else {
 		ctx.Error("Unsupported method", fasthttp.StatusMethodNotAllowed)
 	}
