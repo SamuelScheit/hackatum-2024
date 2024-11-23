@@ -7,6 +7,7 @@ Name=checkmate
 [Service]
 Restart=always
 ExecStart=/home/challenger/hackatum-2024/server/checkmate
+WorkingDirectory=/home/challenger/hackatum-2024/server
 
 [Install]
 WantedBy=multi-user.target

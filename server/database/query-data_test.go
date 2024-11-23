@@ -28,7 +28,7 @@ func TestQueryDatabase(t *testing.T) {
 		MinNumberSeats:        sql.NullInt32{Int32: 1, Valid: false},
 		MinPrice:              sql.NullInt32{Int32: 0, Valid: false},
 		MaxPrice:              sql.NullInt32{Int32: 0, Valid: false},
-		CarType:               sql.NullInt32{Int32: 0, Valid: false},
+		CarType:               sql.NullString{String: "", Valid: false},
 		OnlyVollkasko:         sql.NullBool{Bool: false, Valid: false},
 		MinFreeKilometer:      sql.NullInt32{Int32: 0, Valid: false},
 	})
