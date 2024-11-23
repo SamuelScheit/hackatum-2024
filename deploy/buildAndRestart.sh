@@ -5,4 +5,4 @@ echo "restarting systemd service"
 systemctl restart checkmate.service
 
 sleep 2
-journalctl -u checkmate.service --no-pager
+journalctl -u checkmate.service --no-pager -n 20
