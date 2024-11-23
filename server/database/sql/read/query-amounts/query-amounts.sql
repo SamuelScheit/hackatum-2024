@@ -4,7 +4,19 @@ WITH DataWithFilteredRequiredParams as (
         -- regionID_MIN, regionID_MAX
         (mostSpecificRegionID >= ? AND mostSpecificRegionID <= ?) 
         -- timeRangeEnd, timeRangeStart, numberDays
-        AND (MAX(endDate, ?) - MIN(startDate, ?) >= ?)
+    AND (
+        (
+            CASE 
+                WHEN endDate > ? THEN ?3  
+                ELSE endDate
+            END
+            -
+            CASE 
+                WHEN startDate < ? THEN ?4 
+                ELSE startDate
+            END
+        ) >= ?
+    )
 )
 
 
