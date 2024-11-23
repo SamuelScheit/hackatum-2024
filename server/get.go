@@ -18,8 +18,8 @@ type OptionalUint struct {
 // GetParams holds the parsed query parameters
 type GetParams struct {
 	regionID              uint
-	timeRangeStart        uint
-	timeRangeEnd          uint
+	timeRangeStart        uint64
+	timeRangeEnd          uint64
 	numberDays            uint
 	sortOrder             string
 	page                  uint
@@ -37,6 +37,11 @@ type GetParams struct {
 func parseUint(value []byte) (uint, error) {
 	v, err := strconv.ParseUint(string(value), 10, 32)
 	return uint(v), err
+}
+
+func parseUint64(value []byte) (uint64, error) {
+	v, err := strconv.ParseUint(string(value), 10, 64)
+	return v, err
 }
 
 func parseOptionalUint(value []byte) (OptionalUint, error) {
@@ -73,7 +78,7 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 			params.regionID = v
 		},
 		"timeRangeStart": func(value []byte) {
-			v, err := parseUint(value)
+			v, err := parseUint64(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid timeRangeStart")
 				return
@@ -81,7 +86,7 @@ func (params *GetParams) parseArgs(args *fasthttp.Args) *[]string {
 			params.timeRangeStart = v
 		},
 		"timeRangeEnd": func(value []byte) {
-			v, err := parseUint(value)
+			v, err := parseUint64(value)
 			if err != nil {
 				parseErrors = append(parseErrors, "Invalid timeRangeEnd")
 				return
