@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"checkmate/memory"
 	"checkmate/types"
@@ -66,7 +65,7 @@ func PostHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	time.Sleep(500 * time.Millisecond)
+	// time.Sleep(500 * time.Millisecond)
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte("OK"))
