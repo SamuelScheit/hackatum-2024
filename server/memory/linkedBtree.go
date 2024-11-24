@@ -67,32 +67,32 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 
 func (t *LinkedBtree) BitArrayGreaterEqual(key int32, resBitArray *BitArray) {
 	t.GreaterThanEqual(key, func(key int32, iids []int32) {
-		for iid := range iids {
-			resBitArray.SetBit(iid)
+		for _, iid := range iids {
+			resBitArray.SetBit(int(iid))
 		}
 	})
 }
 
 func (t *LinkedBtree) BitArrayGreaterThan(key int32, resBitArray *BitArray) {
 	t.GreaterThan(key, func(key int32, iids []int32) {
-		for iid := range iids {
-			resBitArray.SetBit(iid)
+		for _, iid := range iids {
+			resBitArray.SetBit(int(iid))
 		}
 	})
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32, resBitArray *BitArray) {
 	t.LessThan(key, func(key int32, iids []int32) {
-		for iid := range iids {
-			resBitArray.SetBit(iid)
+		for _, iid := range iids {
+			resBitArray.SetBit(int(iid))
 		}
 	})
 }
 
 func (t *LinkedBtree) BitArrayLessThanEqual(key int32, resBitArray *BitArray) {
 	t.LessThanEqual(key, func(key int32, iids []int32) {
-		for iid := range iids {
-			resBitArray.SetBit(iid)
+		for _, iid := range iids {
+			resBitArray.SetBit(int(iid))
 		}
 	})
 }
