@@ -2,6 +2,7 @@ package memory
 
 import (
 	"checkmate/types"
+	"sync"
 )
 
 // takes: iid,  returns: SearchResultOffer
@@ -20,7 +21,12 @@ func InitMapStore() {
 	iidCounter = 0
 }
 
+var mu sync.Mutex
+
 func InsertOffers(offers *[]types.Offer) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	for _, offer := range *offers {
 		InsertOffer(&offer)
 	}
