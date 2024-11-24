@@ -23,6 +23,9 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	startTree.BitArrayGreaterEqual(daysStart, temp)
 	LogicalAndInPlace(result, temp)
 
+	// offer.start >= request.startDate
+	// request.startDate <= offer.start
+
 	temp.Clear()
 
 	// check EndDate
