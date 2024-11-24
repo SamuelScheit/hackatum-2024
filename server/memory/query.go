@@ -130,6 +130,8 @@ func whereRegionBoundsMatch(regionID uint) *BitArray {
 	regionTree.BitArrayLessThanEqual(int32(max), temp2) // temp2 = x < max
 	LogicalAndInPlace(temp1, temp2)                     // temp1 = (x > min) AND (x < max)
 
+	temp2.Clear()
+
 	regionTree.BitArrayGreaterEqual(int32(min2), temp2)  // temp2 = x > min2
 	regionTree.BitArrayLessThanEqual(int32(max2), temp3) // temp3 = x < max2
 	LogicalAndInPlace(temp2, temp3)                      // temp2 = (x > min2) AND (x < max2)
