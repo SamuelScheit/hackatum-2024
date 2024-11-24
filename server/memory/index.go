@@ -126,7 +126,7 @@ func indexStartDate(offer *types.Offer) {
 }
 
 func indexEndDate(offer *types.Offer) {
-	days := millisecondsToDays(offer.StartDate)
+	days := millisecondsToDays(offer.EndDate)
 	endTree.Add(days, offer.IID)
 }
 

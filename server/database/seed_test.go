@@ -77,7 +77,7 @@ func TestSeedDatabase(t *testing.T) {
 			StartDate:            start.Unix(),
 			EndDate:              end.Unix(),
 			NumberSeats:          offer.NumberSeats,
-			Price:                offer.Price,
+			Price:                int32(offer.Price),
 			CarType:              offer.CarType,
 			HasVollkasko:         offer.HasVollkasko,
 			FreeKilometers:       offer.FreeKilometers,
