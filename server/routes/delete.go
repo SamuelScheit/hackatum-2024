@@ -1,14 +1,15 @@
 package routes
 
 import (
-	"checkmate/database"
+	"checkmate/memory"
 
 	"github.com/valyala/fasthttp"
 )
 
 func DeleteHandler(ctx *fasthttp.RequestCtx) {
 
-	database.DeleteAllOffers()
+	// database.DeleteAllOffers()
+	memory.DeleteAllOffers()
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBodyString(`OK`)
