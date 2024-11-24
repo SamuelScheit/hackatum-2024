@@ -110,6 +110,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 		LogicalAndInPlace(result, numberSeatsInital)
 	}
 
+	result = pagination(result, opts.Page, opts.PageSize)
+
 	searchResults, err := collectOfferJSONSorted(result, offerMap, opts.SortOrder == 0)
 
 	if err != nil {
@@ -122,18 +124,27 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 }
 
-func pagination(in *bitarray, pagenumber uint, pagesize uint) *bitarray {
-	count := 0
+func pagination(in *BitArray, pageNumber uint, pageSize uint) *BitArray {
+	startIndex := pageNumber * pageSize
+	endIndex := startIndex + pageSize
+
+	result := NewBitArray(in.size)
+	count := uint(0)
+
 	for i := 0; i < in.size; i++ {
-		if count == int(pagesize) {
-			// remove remaining bits and break
-		}
-		bit, _ := in.getbit(i)
+		bit, _ := in.GetBit(i)
 		if bit == 1 {
-			count += 1
+			if count >= startIndex && count < endIndex {
+				result.SetBit(i)
+			}
+			count++
+			if count >= endIndex {
+				break
+			}
 		}
 	}
 
+	return result
 }
 
 func whereRegionBoundsMatch(regionID uint) *BitArray {
