@@ -66,7 +66,7 @@ func PostHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBody([]byte("OK"))
