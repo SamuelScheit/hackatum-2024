@@ -80,7 +80,7 @@ func getPriceRangeAggregation(opts *types.GetParams,
 			}
 		}
 
-		if bit, _ := freeKilometersInital.GetBit(i); bit == 1 {
+		if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
 
 			freeKilometers := int32(math.Floor(float64(offer.FreeKilometers)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
