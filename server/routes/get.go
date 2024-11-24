@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"checkmate/database"
+	"checkmate/memory"
 	"checkmate/types"
 	"encoding/json"
 	"fmt"
@@ -13,7 +13,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 	args := ctx.URI().QueryArgs()
 
 	// PERF: if necessary, do not use allocation, instead use a params pool
-	params := types.GetParams{}
+	params := &types.GetParams{}
 	parseError := params.ParseArgs(args)
 
 	if parseError != nil {
@@ -23,7 +23,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	searchResults, err := database.QuerySearchResults(params)
+	searchResults, err := memory.QuerySearchResults(params)
 
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
@@ -32,35 +32,7 @@ func GetHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	response := types.QueryResponse{
-		Offers: types.OptimizedSearchResultOffer{
-			Data: searchResults,
-		},
-		PriceRanges: []types.PriceRange{},
-		CarTypeCounts: types.CarTypeCount{
-			Small:  0,
-			Sports: 0,
-			Luxury: 0,
-			Family: 0,
-		},
-		SeatsCount:         []types.SeatsCount{},
-		FreeKilometerRange: []types.FreeKilometerRange{},
-		VollkaskoCount: types.VollkaskoCount{
-			TrueCount:  0,
-			FalseCount: 0,
-		},
-	}
-
-	err = database.QueryAmount(params, &response)
-
-	if err != nil {
-		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-		ctx.SetBodyString("Internal server error")
-		fmt.Println("error query amount", err)
-		return
-	}
-
-	responseJSON, err := json.Marshal(response)
+	responseJSON, err := json.Marshal(searchResults)
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.SetBodyString("Internal server error")

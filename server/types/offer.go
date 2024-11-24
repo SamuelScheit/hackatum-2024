@@ -1,13 +1,14 @@
 package types
 
 type Offer struct {
+	IID                  int32
 	ID                   string `json:"ID"`
 	Data                 string `json:"data"`
 	MostSpecificRegionID int    `json:"mostSpecificRegionID"`
 	StartDate            int64  `json:"startDate"`
 	EndDate              int64  `json:"endDate"`
 	NumberSeats          int    `json:"numberSeats"`
-	Price                int    `json:"price"`
+	Price                int32  `json:"price"`
 	CarType              string `json:"carType"`
 	HasVollkasko         bool   `json:"hasVollkasko"`
 	FreeKilometers       int    `json:"freeKilometers"`

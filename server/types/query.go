@@ -1,12 +1,12 @@
 package types
 
 type QueryResponse struct {
-	Offers             OptimizedSearchResultOffer `json:"offers" validate:"required"`
-	PriceRanges        []PriceRange               `json:"priceRanges" validate:"required"`
-	CarTypeCounts      CarTypeCount               `json:"carTypeCounts" validate:"required"`
-	SeatsCount         []SeatsCount               `json:"seatsCount" validate:"required"`
-	FreeKilometerRange []FreeKilometerRange       `json:"freeKilometerRange" validate:"required"`
-	VollkaskoCount     VollkaskoCount             `json:"vollkaskoCount" validate:"required"`
+	Offers             []SearchResultOffer   `json:"offers" validate:"required"`
+	PriceRanges        []*PriceRange         `json:"priceRanges" validate:"required"`
+	CarTypeCounts      CarTypeCount          `json:"carTypeCounts" validate:"required"`
+	SeatsCount         []*SeatsCount         `json:"seatsCount" validate:"required"`
+	FreeKilometerRange []*FreeKilometerRange `json:"freeKilometerRange" validate:"required"`
+	VollkaskoCount     VollkaskoCount        `json:"vollkaskoCount" validate:"required"`
 }
 
 type PriceRange struct {

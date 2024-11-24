@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"checkmate/database"
+	"checkmate/memory"
 	"checkmate/types"
 
 	"github.com/valyala/fasthttp"
@@ -57,7 +57,7 @@ func PostHandler(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
-	err = database.InsertOffers(req.Offers)
+	err = memory.InsertOffers(&req.Offers)
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.SetBodyString("Failed to insert offers")
