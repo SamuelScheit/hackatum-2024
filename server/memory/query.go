@@ -67,11 +67,14 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// MinPrice
 	if opts.MinPrice.Valid {
-		priceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, priceRangeInital)
+		copy := priceRangeInital.Copy()
+		priceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, copy)
+		LogicalAndInPlace(priceRangeInital, copy)
 	}
 
 	// MinFreeKilometer
 	if opts.MinFreeKilometer.Valid {
+		freeKilometersInital = result.Copy()
 		kilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
 	}
 
