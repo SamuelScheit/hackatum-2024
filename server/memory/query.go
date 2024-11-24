@@ -104,7 +104,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 		LogicalAndInPlace(result, numberSeatsInital)
 	}
 
-	searchResults, err := collectOfferJSONSorted(result, offerMap, opts.SortOrder != 0)
+	searchResults, err := collectOfferJSONSorted(result, offerMap, opts.SortOrder == 0)
 
 	if err != nil {
 		return nil, err
