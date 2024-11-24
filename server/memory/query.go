@@ -122,6 +122,20 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 }
 
+func pagination(in *bitarray, pagenumber uint, pagesize uint) *bitarray {
+	count := 0
+	for i := 0; i < in.size; i++ {
+		if count == int(pagesize) {
+			// remove remaining bits and break
+		}
+		bit, _ := in.getbit(i)
+		if bit == 1 {
+			count += 1
+		}
+	}
+
+}
+
 func whereRegionBoundsMatch(regionID uint) *BitArray {
 	min, max, min2, max2 := optimization.GetRegionBounds(regionID)
 
@@ -221,6 +235,9 @@ func collectOfferJSONSorted(ba *BitArray, offerMap map[int32]*types.Offer, sortA
 
 	// Sort the results based on the Price and the sorting order
 	sort.Slice(results, func(i, j int) bool {
+		if results[i].Price == results[j].Price {
+			return results[i].ID < results[j].ID
+		}
 		if sortAscending {
 			return results[i].Price < results[j].Price
 		}
