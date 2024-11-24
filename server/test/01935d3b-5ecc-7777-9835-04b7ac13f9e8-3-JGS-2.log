@@ -1,0 +1,70 @@
+{
+  "expected_result": {
+    "Offers": [],
+    "CarTypeCounts": {
+      "family": 0,
+      "luxury": 0,
+      "small": 0,
+      "sports": 0
+    },
+    "FreeKilometerRanges": [
+      {
+        "Start": 100,
+        "End": 150,
+        "Count": 3
+      },
+      {
+        "Start": 200,
+        "End": 250,
+        "Count": 2
+      },
+      {
+        "Start": 300,
+        "End": 350,
+        "Count": 1
+      },
+      {
+        "Start": 600,
+        "End": 650,
+        "Count": 1
+      },
+      {
+        "Start": 650,
+        "End": 700,
+        "Count": 1
+      },
+      {
+        "Start": 700,
+        "End": 750,
+        "Count": 1
+      },
+      {
+        "Start": 750,
+        "End": 800,
+        "Count": 1
+      },
+      {
+        "Start": 800,
+        "End": 850,
+        "Count": 1
+      }
+    ],
+    "PriceRanges": [
+      {
+        "Start": 2020,
+        "End": 2030,
+        "Count": 1
+      },
+      {
+        "Start": 8930,
+        "End": 8940,
+        "Count": 1
+      }
+    ],
+    "SeatsCounts": {},
+    "VollkaskoCount": {
+      "TrueCount": 0,
+      "FalseCount": 0
+    }
+  }
+}

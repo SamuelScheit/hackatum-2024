@@ -26,7 +26,7 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	LogicalAndInPlace(priceRangeFiltered, freeKilometersInital)
 	LogicalAndInPlace(priceRangeFiltered, vollkaskoInital)
 
-	carTypeFiltered := LogicalAnd(numberSeatsInital, carTypeInital)
+	carTypeFiltered := LogicalAnd(numberSeatsInital, priceRangeInital)
 	LogicalAndInPlace(carTypeFiltered, freeKilometersInital)
 	LogicalAndInPlace(carTypeFiltered, vollkaskoInital)
 
