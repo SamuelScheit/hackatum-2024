@@ -71,8 +71,10 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	seatsCounts := []*types.SeatsCount{}
 	var seat *types.SeatsCount
 
+	length := min(priceRangeFiltered.size, len(OfferMap))
+
 	// opts.PriceRangeWidth
-	for i := 0; i < priceRangeFiltered.size; i++ {
+	for i := 0; i < length; i++ {
 
 		offer = OfferMap[i]
 
