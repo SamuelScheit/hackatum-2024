@@ -151,6 +151,7 @@ func (ba *BitArray) PrintBits() string {
 // countSetBits counts the number of bits set in a BitArray
 func (ba *BitArray) CountSetBits() int {
 	count := 0
+
 	for i := range ba.data {
 		count += bits.OnesCount64(ba.data[i])
 	}

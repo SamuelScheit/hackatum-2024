@@ -61,6 +61,7 @@ func getAggregation(opts *types.GetParams,
 		FalseCount: LogicalAnd(vollkaskoFiltered, &NoVollkaskoIndex).CountSetBits(),
 	}
 
+	freeKilometerRange := map[int32]*types.FreeKilometerRange{}
 	freeKilometerRanges := []*types.FreeKilometerRange{}
 	minFreeKilometerWidth := int32(opts.MinFreeKilometerWidth)
 
@@ -84,27 +85,77 @@ func getAggregation(opts *types.GetParams,
 		freeKilometerRanges = append(freeKilometerRanges, kilometer)
 	}
 
+	var rang *types.PriceRange
+	priceRange := map[int32]*types.PriceRange{}
 	priceRanges := []*types.PriceRange{}
 	priceRangeWidth := int32(opts.PriceRangeWidth)
-	priceRangeStart := int32(math.Floor(float64(MinPrice)/float64(priceRangeWidth))) * priceRangeWidth
+	// priceRangeStart := int32(math.Floor(float64(MinPrice)/float64(priceRangeWidth))) * priceRangeWidth
 
-	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
-		priceStart := PriceTree.BitArrayGreaterEqual(i)
-		priceEnd := PriceTree.BitArrayLessThan(i + priceRangeWidth)
-		priceRange := LogicalAnd(priceRangeFiltered, priceStart)
-		LogicalAndInPlace(priceRange, priceEnd)
-		count := int32(priceRange.CountSetBits())
-		if count == 0 {
-			continue
+	var offer *types.Offer
+	var ok bool
+	var kilometer *types.FreeKilometerRange
+
+	_ = kilometer
+	_ = freeKilometerRange
+
+	for i := 0; i <= int(IIDCounter); i++ {
+		offer = OfferMap[i]
+
+		if bit, _ := priceRangeFiltered.GetBit(i); bit == 1 {
+
+			price := int32(math.Floor(float64(offer.Price)/float64(priceRangeWidth))) * (priceRangeWidth)
+
+			if rang, ok = priceRange[price]; !ok {
+				rang = &types.PriceRange{
+					Start: (price),
+					End:   (price + priceRangeWidth),
+					Count: 0,
+				}
+				priceRange[price] = rang
+				priceRanges = append(priceRanges, rang)
+			}
+
+			rang.Count++
+
 		}
 
-		rang := &types.PriceRange{
-			Start: i,
-			End:   i + priceRangeWidth,
-			Count: count,
-		}
-		priceRanges = append(priceRanges, rang)
+		// if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
+
+		// 	freeKilometers := int32(math.Floor(float64(offer.FreeKilometers)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
+
+		// 	if kilometer, ok = freeKilometerRange[freeKilometers]; !ok {
+		// 		kilometer = &types.FreeKilometerRange{
+		// 			Start: (freeKilometers),
+		// 			End:   (freeKilometers + minFreeKilometerWidth),
+		// 			Count: 0,
+		// 		}
+		// 		freeKilometerRange[freeKilometers] = kilometer
+		// 		freeKilometerRanges = append(freeKilometerRanges, kilometer)
+		// 	}
+
+		// 	kilometer.Count++
+		// }
 	}
+
+	// Takes too long, because loop is too large if width is small
+
+	// for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
+	// 	priceStart := PriceTree.BitArrayGreaterEqual(i)
+	// 	priceEnd := PriceTree.BitArrayLessThan(i + priceRangeWidth)
+	// 	priceRange := LogicalAnd(priceRangeFiltered, priceStart)
+	// 	LogicalAndInPlace(priceRange, priceEnd)
+	// 	count := int32(priceRange.CountSetBits())
+	// 	if count == 0 {
+	// 		continue
+	// 	}
+
+	// 	rang := &types.PriceRange{
+	// 		Start: i,
+	// 		End:   i + priceRangeWidth,
+	// 		Count: count,
+	// 	}
+	// 	priceRanges = append(priceRanges, rang)
+	// }
 
 	seatsCounts := []*types.SeatsCount{}
 
