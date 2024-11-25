@@ -6,19 +6,19 @@ import (
 )
 
 // takes: iid,  returns: SearchResultOffer
-var offerSearchResultMap map[int32]types.SearchResultOffer
-var offerMap map[int32]*types.Offer
+var OfferSearchResultMap map[int32]types.SearchResultOffer
+var OfferMap map[int32]*types.Offer
 
 // takes: uuid, returns: iid
-var iidMap map[string]int32
-var iidCounter int32
+var IIDMap map[string]int32
+var IIDCounter int32
 
 func InitMapStore() {
-	offerMap = make(map[int32]*types.Offer)
-	offerSearchResultMap = make(map[int32]types.SearchResultOffer)
-	iidMap = make(map[string]int32)
+	OfferMap = make(map[int32]*types.Offer)
+	OfferSearchResultMap = make(map[int32]types.SearchResultOffer)
+	IIDMap = make(map[string]int32)
 
-	iidCounter = 0
+	IIDCounter = 0
 }
 
 var mu sync.Mutex
@@ -35,17 +35,17 @@ func InsertOffers(offers *[]types.Offer) error {
 
 func InsertOffer(offer *types.Offer) {
 	if offer.IID == 0 {
-		iidCounter++
-		offer.IID = iidCounter
+		IIDCounter++
+		offer.IID = IIDCounter
 	}
 
-	iidMap[offer.ID] = offer.IID
-	offerSearchResultMap[offer.IID] = types.SearchResultOffer{
+	IIDMap[offer.ID] = offer.IID
+	OfferSearchResultMap[offer.IID] = types.SearchResultOffer{
 		ID:   offer.ID,
 		Data: offer.Data,
 	}
-	offerMap[offer.IID] = offer
-	priceTree.Add(offer.Price, offer.IID)
+	OfferMap[offer.IID] = offer
+	PriceTree.Add(offer.Price, offer.IID)
 
 	indexVollkasko(offer)
 	indexCarType(offer)

@@ -3,6 +3,9 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"checkmate/memory"
+	"checkmate/optimization"
+	"checkmate/routes"
 	"checkmate/types"
 	"database/sql"
 	"encoding/json"
@@ -10,11 +13,18 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
+	memory.Init()
+	optimization.Init()
+	go routes.Serve()
+
 	entries, err := os.ReadDir(".")
 
 	if err != nil {
@@ -37,13 +47,13 @@ type LogEntry struct {
 }
 
 type Log struct {
-	ID             string                 `json:"id"`
-	StartTime      string                 `json:"start_time"`
-	Duration       float64                `json:"duration"`
-	ExpectedResult map[string]interface{} `json:"expected_result"`
-	ActualResult   map[string]interface{} `json:"actual_result"`
-	SearchConfig   *json.RawMessage       `json:"search_config"`
-	WriteConfig    *json.RawMessage       `json:"write_config"`
+	ID             string           `json:"id"`
+	StartTime      string           `json:"start_time"`
+	Duration       float64          `json:"duration"`
+	ExpectedResult *json.RawMessage `json:"expected_result"`
+	ActualResult   *json.RawMessage `json:"actual_result"`
+	SearchConfig   *json.RawMessage `json:"search_config"`
+	WriteConfig    *json.RawMessage `json:"write_config"`
 }
 
 type SearchConfig struct {
@@ -62,6 +72,31 @@ type SearchConfig struct {
 	Order             string     `json:"Order"`
 	PriceBucketWidth  int        `json:"PriceBucketWidth"`
 	FreeKmBucketWidth int        `json:"FreeKmBucketWidth"`
+}
+
+type GetResponse struct {
+	Offers              []GetOffer              `json:"Offers"`
+	CarTypeCounts       map[string]int          `json:"CarTypeCounts"`
+	FreeKilometerRanges []GetRangeCount         `json:"FreeKilometerRanges"`
+	PriceRanges         []GetRangeCount         `json:"PriceRanges"`
+	SeatsCounts         map[string]int          `json:"SeatsCounts"`
+	VollkaskoCount      GetVollkaskoCountStruct `json:"VollkaskoCount"`
+}
+
+type GetOffer struct {
+	OfferID       string `json:"OfferID"`
+	IsDataCorrect bool   `json:"IsDataCorrect"`
+}
+
+type GetRangeCount struct {
+	Start int `json:"Start"`
+	End   int `json:"End"`
+	Count int `json:"Count"`
+}
+
+type GetVollkaskoCountStruct struct {
+	TrueCount  int `json:"TrueCount"`
+	FalseCount int `json:"FalseCount"`
 }
 
 type Pagination struct {
@@ -95,7 +130,7 @@ func openLog(filePath string) {
 		if entry.RequestType == "PUSH" {
 			handlePost(*entry.Log.WriteConfig)
 		} else if entry.RequestType == "READ" {
-			handleGet(*entry.Log.SearchConfig)
+			handleGet(*entry.Log.SearchConfig, &entry.Log)
 		}
 	}
 
@@ -260,7 +295,7 @@ func parseTimestampToMillis(timestamp string) int64 {
 	return parsedTime.UnixMilli()
 }
 
-func handleGet(searchConfig json.RawMessage) {
+func handleGet(searchConfig json.RawMessage, log *Log) {
 	// Parse the `searchConfig` from the log
 	var logEntry struct {
 		ID               string   `json:"ID"`
@@ -340,5 +375,163 @@ func handleGet(searchConfig json.RawMessage) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body), ",")
+
+	var result types.QueryResponse
+
+	json.Unmarshal(body, &result)
+
+	var expectedResult GetResponse
+	var actualResult GetResponse
+
+	json.Unmarshal(*log.ExpectedResult, &expectedResult)
+	json.Unmarshal(*log.ActualResult, &actualResult)
+
+	hasError := false
+
+	for i, value := range expectedResult.Offers {
+		if i >= len(actualResult.Offers) {
+			hasError = true
+
+			if i == len(actualResult.Offers) {
+				fmt.Println("Offers differ: Expected:", len(expectedResult.Offers), "Actual:", len(actualResult.Offers), expectedResult.Offers)
+			}
+
+			iid, found := memory.IIDMap[value.OfferID]
+
+			if !found {
+				fmt.Println("IID not found", value.OfferID)
+				continue
+			}
+
+			offer, found := memory.OfferMap[iid]
+
+			if !found {
+				fmt.Println("IID not found", value.OfferID, iid)
+				continue
+			}
+
+			fmt.Println("Offer found", value.OfferID)
+			spew.Dump(offer)
+
+			startDays := memory.MillisecondsToDays(offer.StartDate)
+			endDays := memory.MillisecondsToDays(offer.EndDate)
+			days := memory.MillisecondsToDays(offer.EndDate - offer.StartDate)
+
+			bit, err := memory.DaysIndexMap[days].GetBit(int(iid))
+
+			if err != nil {
+				fmt.Println("Error getting bit", iid, days)
+			}
+
+			if bit == 0 {
+				fmt.Println("not found in DaysIndexMap", iid, days)
+			} else {
+				fmt.Println("found in DaysIndexMap", iid, days)
+			}
+
+			iidsStartDay, err := memory.StartTree.Get(startDays)
+
+			if err != nil {
+				fmt.Println("Error getting days", startDays)
+			}
+
+			if !slices.Contains(iidsStartDay, iid) {
+				fmt.Println("not found in StartTree", iid, startDays)
+			} else {
+				fmt.Println("found in StartTree", iid, startDays)
+			}
+
+			iidsEndDay, err := memory.EndTree.Get(endDays)
+
+			if err != nil {
+				fmt.Println("Error getting days", endDays)
+			}
+
+			if !slices.Contains(iidsEndDay, iid) {
+				fmt.Println("not found in EndTree", iid, endDays)
+			} else {
+				fmt.Println("found in EndTree", iid, endDays)
+			}
+
+			vollkasko, err := memory.VollkaskoIndex.GetBit(int(iid))
+
+			if err != nil {
+				fmt.Println("Error getting Vollkasko", iid)
+			}
+
+			if vollkasko == 1 && offer.HasVollkasko {
+				fmt.Println("Vollkasko correct", iid)
+			} else {
+				fmt.Println("Vollkasko incorrect", iid, vollkasko, offer.HasVollkasko)
+			}
+
+			break
+		} else {
+
+			other := actualResult.Offers[i]
+
+			if (value.OfferID != other.OfferID) || (value.IsDataCorrect != other.IsDataCorrect) {
+				fmt.Print("Offer differ ", value.OfferID, other.OfferID)
+				hasError = true
+			}
+		}
+
+	}
+
+	for key, value := range expectedResult.CarTypeCounts {
+		other := actualResult.CarTypeCounts[key]
+
+		if value != other {
+			fmt.Println("CarTypeCount differ", key, value, other)
+			hasError = true
+		}
+	}
+
+	for key, value := range expectedResult.SeatsCounts {
+		other := actualResult.SeatsCounts[key]
+
+		if value != other {
+			fmt.Println("SeatsCount differ", key, value, other)
+			hasError = true
+		}
+	}
+
+	for i, value := range expectedResult.FreeKilometerRanges {
+		if i >= len(actualResult.FreeKilometerRanges) {
+			fmt.Println("FreeKilometerRanges differ: Expected:", len(expectedResult.FreeKilometerRanges), "Actual:", len(actualResult.FreeKilometerRanges), expectedResult.FreeKilometerRanges)
+			break
+		}
+		other := actualResult.FreeKilometerRanges[i]
+
+		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
+			fmt.Print("FreeKilometerRange differ ")
+
+			fmt.Print("Count: ", value.Count, other.Count)
+			fmt.Print("Start: ", value.Start, other.Start)
+			fmt.Print("End: ", value.End, other.End)
+			hasError = true
+		}
+	}
+
+	for i, value := range expectedResult.PriceRanges {
+		if i >= len(actualResult.PriceRanges) {
+			fmt.Println("PriceRanges differ: Expected:", len(expectedResult.PriceRanges), "Actual:", len(actualResult.PriceRanges), expectedResult.PriceRanges)
+			break
+		}
+		other := actualResult.PriceRanges[i]
+
+		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
+			fmt.Print("PriceRange differ ")
+
+			fmt.Print("Count: ", value.Count, other.Count)
+			fmt.Print("Start: ", value.Start, other.Start)
+			fmt.Print("End: ", value.End, other.End)
+			hasError = true
+		}
+	}
+
+	if hasError {
+		os.Exit(1)
+	}
+
 }

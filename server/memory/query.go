@@ -19,8 +19,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	LogicalOrInPlace(result, whereRegionBoundsMatch(opts.RegionID))
 
 	// check startDate
-	daysStart := millisecondsToDays(opts.TimeRangeStart)
-	startTree.BitArrayGreaterEqual(daysStart, temp)
+	daysStart := MillisecondsToDays(opts.TimeRangeStart)
+	StartTree.BitArrayGreaterEqual(daysStart, temp)
 	LogicalAndInPlace(result, temp)
 
 	// offer.start >= request.startDate
@@ -29,19 +29,19 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	temp.Clear()
 
 	// check EndDate
-	daysEnd := millisecondsToDays(opts.TimeRangeEnd)
-	endTree.BitArrayLessThanEqual(daysEnd, temp)
+	daysEnd := MillisecondsToDays(opts.TimeRangeEnd)
+	EndTree.BitArrayLessThanEqual(daysEnd, temp)
 	LogicalAndInPlace(result, temp)
 
 	// check daysAmount
 	amountDays := daysEnd - daysStart
 
-	if int(amountDays) > len(daysIndexMap) {
+	if int(amountDays) > len(DaysIndexMap) {
 		// TODO: dynamically calculate the days map
 		return nil, fmt.Errorf("amount of days is too high")
 	}
 
-	LogicalAndInPlace(result, &daysIndexMap[amountDays])
+	LogicalAndInPlace(result, &DaysIndexMap[amountDays])
 
 	// -- -- -- optional -- -- --
 
@@ -62,20 +62,20 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// MaxPrice
 	if opts.MaxPrice.Valid {
-		priceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
+		PriceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
 	}
 
 	// MinPrice
 	if opts.MinPrice.Valid {
 		copy := priceRangeInital.Copy()
-		priceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, copy)
+		PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, copy)
 		LogicalAndInPlace(priceRangeInital, copy)
 	}
 
 	// MinFreeKilometer
 	if opts.MinFreeKilometer.Valid {
 		freeKilometersInital = result.Copy()
-		kilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
+		KilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
 	}
 
 	// OnlyVallkasko
@@ -116,7 +116,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	result = pagination(result, opts.Page, opts.PageSize)
 
-	searchResults, err := collectOfferJSONSorted(result, offerMap, opts.SortOrder == 0)
+	searchResults, err := collectOfferJSONSorted(result, OfferMap, opts.SortOrder == 0)
 
 	if err != nil {
 		return nil, err
@@ -154,18 +154,18 @@ func pagination(in *BitArray, pageNumber uint, pageSize uint) *BitArray {
 func whereRegionBoundsMatch(regionID uint) *BitArray {
 	min, max, min2, max2 := optimization.GetRegionBounds(regionID)
 
-	temp1 := NewBitArray(regionTree.Size)
-	temp2 := NewBitArray(regionTree.Size)
-	temp3 := NewBitArray(regionTree.Size)
+	temp1 := NewBitArray(RegionTree.Size)
+	temp2 := NewBitArray(RegionTree.Size)
+	temp3 := NewBitArray(RegionTree.Size)
 
-	regionTree.BitArrayGreaterEqual(int32(min), temp1)  // temp1 = x > min
-	regionTree.BitArrayLessThanEqual(int32(max), temp2) // temp2 = x < max
+	RegionTree.BitArrayGreaterEqual(int32(min), temp1)  // temp1 = x > min
+	RegionTree.BitArrayLessThanEqual(int32(max), temp2) // temp2 = x < max
 	LogicalAndInPlace(temp1, temp2)                     // temp1 = (x > min) AND (x < max)
 
 	temp2.Clear()
 
-	regionTree.BitArrayGreaterEqual(int32(min2), temp2)  // temp2 = x > min2
-	regionTree.BitArrayLessThanEqual(int32(max2), temp3) // temp3 = x < max2
+	RegionTree.BitArrayGreaterEqual(int32(min2), temp2)  // temp2 = x > min2
+	RegionTree.BitArrayLessThanEqual(int32(max2), temp3) // temp3 = x < max2
 	LogicalAndInPlace(temp2, temp3)                      // temp2 = (x > min2) AND (x < max2)
 
 	// Combine both ranges with OR
@@ -176,26 +176,26 @@ func whereRegionBoundsMatch(regionID uint) *BitArray {
 }
 
 func whereHasVollkaskoIsTrue() *BitArray {
-	return &vollkaskoIndex
+	return &VollkaskoIndex
 }
 
 func whereNumberOfSeatsIs(amount int) (*BitArray, error) {
-	if amount >= len(seatIndexMap) {
+	if amount >= len(SeatIndexMap) {
 		return nil, fmt.Errorf("amount of seats is too high")
 	}
-	return &seatIndexMap[amount], nil
+	return &SeatIndexMap[amount], nil
 }
 
 func whereCarTypIs(cartype string) *BitArray {
 	switch cartype {
 	case "family":
-		return &familyCarIndex
+		return &FamilyCarIndex
 	case "sports":
-		return &sportsCarIndex
+		return &SportsCarIndex
 	case "luxury":
-		return &luxuryCarIndex
+		return &LuxuryCarIndex
 	case "small":
-		return &smallCarIndex
+		return &SmallCarIndex
 	}
 	panic("invalid Cartype")
 }

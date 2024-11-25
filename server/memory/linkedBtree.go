@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"fmt"
+
 	"github.com/tidwall/btree"
 )
 
@@ -28,11 +30,11 @@ func (t *LinkedBtree) Add(key, value int32) {
 	t.Size++
 }
 
-func (t *LinkedBtree) Get(key int32) []int32 {
+func (t *LinkedBtree) Get(key int32) ([]int32, error) {
 	if list, ok := t.hashmap[key]; ok {
-		return list
+		return list, nil
 	}
-	return []int32{}
+	return []int32{}, fmt.Errorf("key %d not found", key)
 }
 
 func (t *LinkedBtree) GreaterThan(key int32, fn func(int32, []int32)) {

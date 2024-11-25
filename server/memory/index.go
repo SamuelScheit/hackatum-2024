@@ -9,104 +9,104 @@ import (
 var DEFAULT_BITLENGTHSIZE = 10000
 
 // vollkasko
-var vollkaskoIndex BitArray
+var VollkaskoIndex BitArray
 
 // cartype
-var familyCarIndex BitArray
-var luxuryCarIndex BitArray
-var sportsCarIndex BitArray
-var smallCarIndex BitArray
+var FamilyCarIndex BitArray
+var LuxuryCarIndex BitArray
+var SportsCarIndex BitArray
+var SmallCarIndex BitArray
 
 // numSeats
-var seatIndexMap []BitArray
+var SeatIndexMap []BitArray
 
 // days
-var daysIndexMap []BitArray
-var startTree *LinkedBtree
-var endTree *LinkedBtree
+var DaysIndexMap []BitArray
+var StartTree *LinkedBtree
+var EndTree *LinkedBtree
 
-var priceTree *LinkedBtree
-var regionTree *LinkedBtree
-var kilometerTree *LinkedBtree
+var PriceTree *LinkedBtree
+var RegionTree *LinkedBtree
+var KilometerTree *LinkedBtree
 
 func InitIndex() {
-	priceTree = NewLinkedBtree()
-	regionTree = NewLinkedBtree()
-	kilometerTree = NewLinkedBtree()
+	PriceTree = NewLinkedBtree()
+	RegionTree = NewLinkedBtree()
+	KilometerTree = NewLinkedBtree()
 
-	startTree = NewLinkedBtree()
-	endTree = NewLinkedBtree()
+	StartTree = NewLinkedBtree()
+	EndTree = NewLinkedBtree()
 
-	daysIndexMap = make([]BitArray, 100)
+	DaysIndexMap = make([]BitArray, 100)
 
-	for i := 0; i < len(daysIndexMap); i++ {
-		daysIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	for i := 0; i < len(DaysIndexMap); i++ {
+		DaysIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	}
 
-	vollkaskoIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	VollkaskoIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
-	familyCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	luxuryCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	sportsCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	smallCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	FamilyCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	LuxuryCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	SportsCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	SmallCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
-	seatIndexMap = make([]BitArray, 10)
+	SeatIndexMap = make([]BitArray, 10)
 
-	for i := 0; i < len(seatIndexMap); i++ {
-		seatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	for i := 0; i < len(SeatIndexMap); i++ {
+		SeatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	}
 }
 
 func indexVollkasko(offer *types.Offer) {
 	if offer.HasVollkasko {
-		vollkaskoIndex.SetBit(int(offer.IID))
+		VollkaskoIndex.SetBit(int(offer.IID))
 	}
 }
 
 func indexCarType(offer *types.Offer) {
 	switch offer.CarType {
 	case "family":
-		familyCarIndex.SetBit(int(offer.IID))
+		FamilyCarIndex.SetBit(int(offer.IID))
 	case "sports":
-		sportsCarIndex.SetBit(int(offer.IID))
+		SportsCarIndex.SetBit(int(offer.IID))
 	case "luxury":
-		luxuryCarIndex.SetBit(int(offer.IID))
+		LuxuryCarIndex.SetBit(int(offer.IID))
 	case "small":
-		smallCarIndex.SetBit(int(offer.IID))
+		SmallCarIndex.SetBit(int(offer.IID))
 	}
 }
 
 func indexNumSeats(offer *types.Offer) {
-	if int32(offer.NumberSeats) >= int32(len(seatIndexMap)) {
-		for i := len(seatIndexMap); i <= int(offer.NumberSeats); i++ {
-			seatIndexMap = append(seatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
+	if int32(offer.NumberSeats) >= int32(len(SeatIndexMap)) {
+		for i := len(SeatIndexMap); i <= int(offer.NumberSeats); i++ {
+			SeatIndexMap = append(SeatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
 		}
 	}
-	seatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
+	SeatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
 }
 
 func indexDays(offer *types.Offer) {
-	amountDays := millisecondsToDays(offer.EndDate - offer.StartDate)
+	amountDays := MillisecondsToDays(offer.EndDate - offer.StartDate)
 
-	daysIndexMap[amountDays].SetBit(int(offer.IID))
+	DaysIndexMap[amountDays].SetBit(int(offer.IID))
 
 }
 
 func indexRegion(offer *types.Offer) {
-	regionTree.Add(int32(offer.MostSpecificRegionID), offer.IID)
+	RegionTree.Add(int32(offer.MostSpecificRegionID), offer.IID)
 }
 
 func indexStartDate(offer *types.Offer) {
-	days := millisecondsToDays(offer.StartDate)
-	startTree.Add(days, offer.IID)
+	days := MillisecondsToDays(offer.StartDate)
+	StartTree.Add(days, offer.IID)
 }
 
 func indexEndDate(offer *types.Offer) {
-	days := millisecondsToDays(offer.EndDate)
-	endTree.Add(days, offer.IID)
+	days := MillisecondsToDays(offer.EndDate)
+	EndTree.Add(days, offer.IID)
 }
 
-func millisecondsToDays(milliseconds int64) int32 {
+func MillisecondsToDays(milliseconds int64) int32 {
 	// Convert milliseconds to seconds
 	seconds := milliseconds / 1000
 

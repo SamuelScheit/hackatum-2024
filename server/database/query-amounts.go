@@ -55,10 +55,10 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 	}
 	defer rows.Close()
 
-	priceRanges := []types.PriceRange{}
+	priceRanges := []*types.PriceRange{}
 	carTypeCounts := types.CarTypeCount{}
-	seatsCounts := []types.SeatsCount{}
-	freeKilometerRanges := []types.FreeKilometerRange{}
+	seatsCounts := []*types.SeatsCount{}
+	freeKilometerRanges := []*types.FreeKilometerRange{}
 	vollkaskoCounts := types.VollkaskoCount{}
 
 	for rows.Next() {
@@ -74,7 +74,7 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 		switch groupingType {
 		case "price_range":
 			_uint := convertStringToUint(groupingValue)
-			priceRanges = append(priceRanges, types.PriceRange{
+			priceRanges = append(priceRanges, &types.PriceRange{
 				Start: _uint,
 				End:   _uint + query.PriceRangeWidth,
 				Count: count,
@@ -92,13 +92,13 @@ func QueryAmount(query types.GetParams, response *types.QueryResponse) error {
 			}
 		case "numberSeats":
 			_uint := convertStringToUint(groupingValue)
-			seatsCounts = append(seatsCounts, types.SeatsCount{
+			seatsCounts = append(seatsCounts, &types.SeatsCount{
 				NumberSeats: _uint,
 				Count:       count,
 			})
 		case "freeKilometerRange":
 			_uint := convertStringToUint(groupingValue)
-			freeKilometerRanges = append(freeKilometerRanges, types.FreeKilometerRange{
+			freeKilometerRanges = append(freeKilometerRanges, &types.FreeKilometerRange{
 				Start: _uint,
 				End:   _uint + query.MinFreeKilometerWidth,
 				Count: count,

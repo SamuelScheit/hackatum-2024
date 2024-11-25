@@ -67,7 +67,7 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	// opts.PriceRangeWidth
 	for i := 0; i < priceRangeFiltered.size; i++ {
 
-		if offer, ok = offerMap[int32(i)]; !ok {
+		if offer, ok = OfferMap[int32(i)]; !ok {
 			continue
 		}
 
