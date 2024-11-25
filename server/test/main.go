@@ -378,13 +378,15 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 	// Construct the URL
 	url := fmt.Sprintf("http://127.0.0.1:80/api/offers?%s", query)
 
+	fmt.Println(url)
+
 	// Make the GET request
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Failed to make GET request: %v\n", err)
 		return
 	}
-	return
+	// return
 	defer resp.Body.Close()
 	fmt.Println("Request", logEntry.ID)
 
