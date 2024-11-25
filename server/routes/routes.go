@@ -2,6 +2,8 @@ package routes
 
 import (
 	"bytes"
+	"fmt"
+	"time"
 
 	"github.com/valyala/fasthttp"
 )
@@ -16,6 +18,8 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	start := time.Now()
+
 	if ctx.IsGet() {
 		GetHandler(ctx)
 	} else if ctx.IsPost() {
@@ -25,6 +29,8 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 	} else {
 		ctx.Error("Unsupported method", fasthttp.StatusMethodNotAllowed)
 	}
+
+	fmt.Println(string(ctx.Method()), "Request took: ", time.Since(start))
 }
 
 func Serve() {

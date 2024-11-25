@@ -125,7 +125,7 @@ func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
 		})
 	}
 
-	return value
+	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
@@ -141,7 +141,7 @@ func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
 		})
 	}
 
-	return value
+	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
@@ -157,5 +157,5 @@ func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
 		})
 	}
 
-	return value
+	return value.Copy()
 }
