@@ -411,6 +411,17 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		fmt.Println("Offers correct length", result.Offers)
 	}
 
+	for i, value := range expectedResult.Offers {
+		if i < len(result.Offers) {
+			other := result.Offers[i]
+
+			if (value.OfferID != other.ID) || (value.IsDataCorrect == false) {
+				fmt.Println("Offer incorrect ", value.OfferID, other.ID)
+				os.Exit(1)
+			}
+		}
+	}
+
 	for i, value := range result.Offers {
 
 		iid, found := memory.IIDMap[value.ID]
