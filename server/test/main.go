@@ -390,7 +390,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		return
 	}
 	defer resp.Body.Close()
-	return
+	fmt.Println("Request", logEntry.ID)
 
 	body, _ := io.ReadAll(resp.Body)
 
@@ -403,8 +403,6 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 	json.Unmarshal(*log.ExpectedResult, &expectedResult)
 	json.Unmarshal(*log.ActualResult, &actualLogResult)
-
-	fmt.Println("Request", logEntry.ID)
 
 	if len(expectedResult.Offers) != len(result.Offers) {
 		fmt.Println("Offers incorrect: Expected:", len(expectedResult.Offers), "Actual:", len(result.Offers), expectedResult.Offers, result.Offers)

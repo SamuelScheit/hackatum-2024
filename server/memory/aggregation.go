@@ -50,10 +50,10 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	LogicalAndInPlace(vollkaskoFiltered, freeKilometersInital)
 
 	carTypeCounts := types.CarTypeCount{
-		Small:  0,
-		Sports: 0,
-		Luxury: 0,
-		Family: 0,
+		Small:  LogicalAnd(carTypeFiltered, GetCarTypeIndex("small")).CountSetBits(),
+		Sports: LogicalAnd(carTypeFiltered, GetCarTypeIndex("sports")).CountSetBits(),
+		Luxury: LogicalAnd(carTypeFiltered, GetCarTypeIndex("luxury")).CountSetBits(),
+		Family: LogicalAnd(carTypeFiltered, GetCarTypeIndex("family")).CountSetBits(),
 	}
 
 	freeKilometerRange := map[int32]*types.FreeKilometerRange{}
@@ -71,10 +71,8 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	seatsCounts := []*types.SeatsCount{}
 	var seat *types.SeatsCount
 
-	length := min(priceRangeFiltered.size, len(OfferMap))
-
 	// opts.PriceRangeWidth
-	for i := 0; i < length; i++ {
+	for i := 0; i < priceRangeFiltered.size; i++ {
 
 		offer = OfferMap[i]
 
@@ -102,21 +100,6 @@ func getPriceRangeAggregation(opts *types.GetParams,
 			}
 
 			kilometer.Count++
-		}
-
-		if bit, _ := carTypeFiltered.GetBit(i); bit == 1 {
-
-			// TODO: speedup
-			switch offer.CarType {
-			case "small":
-				carTypeCounts.Small++
-			case "sports":
-				carTypeCounts.Sports++
-			case "luxury":
-				carTypeCounts.Luxury++
-			case "family":
-				carTypeCounts.Family++
-			}
 		}
 
 		if bit, _ := numberSeats.GetBit(i); bit == 1 {
