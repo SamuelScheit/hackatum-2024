@@ -6,16 +6,16 @@ import (
 )
 
 // takes: iid,  returns: SearchResultOffer
-var OfferSearchResultMap map[int32]types.SearchResultOffer
-var OfferMap map[int32]*types.Offer
+var OfferSearchResultMap []types.SearchResultOffer
+var OfferMap []*types.Offer
 
 // takes: uuid, returns: iid
 var IIDMap map[string]int32
 var IIDCounter int32
 
 func InitMapStore() {
-	OfferMap = make(map[int32]*types.Offer)
-	OfferSearchResultMap = make(map[int32]types.SearchResultOffer)
+	OfferMap = make([]*types.Offer, DEFAULT_BITLENGTHSIZE/64)
+	OfferSearchResultMap = make([]types.SearchResultOffer, DEFAULT_BITLENGTHSIZE/64)
 	IIDMap = make(map[string]int32)
 
 	IIDCounter = 0
@@ -38,6 +38,11 @@ func InsertOffer(offer *types.Offer) {
 	if offer.IID == 0 {
 		IIDCounter++
 		offer.IID = IIDCounter
+		if IIDCounter >= int32(len(OfferMap)) {
+			l := int(IIDCounter) - len(OfferMap) + DEFAULT_BITLENGTHSIZE/64
+			OfferMap = append(OfferMap, make([]*types.Offer, l)...)
+			OfferSearchResultMap = append(OfferSearchResultMap, make([]types.SearchResultOffer, l)...)
+		}
 	}
 
 	IIDMap[offer.ID] = offer.IID

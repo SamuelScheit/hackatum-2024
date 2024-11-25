@@ -233,19 +233,15 @@ func collectOfferJSON(ba *BitArray, offerMap map[int32]types.SearchResultOffer) 
 	return string(jsonData), nil
 }
 
-func collectOfferJSONSorted(ba *BitArray, offerMap map[int32]*types.Offer, sortAscending bool) ([]types.SearchResultOffer, error) {
+func collectOfferJSONSorted(ba *BitArray, offerMap []*types.Offer, sortAscending bool) ([]types.SearchResultOffer, error) {
 	var results []types.Offer
 
 	// Collect offers matching the BitArray
 	for i := 0; i < ba.size; i++ {
 		bit, _ := ba.GetBit(i)
 		if bit == 1 {
-			if offer, exists := offerMap[int32(i)]; exists {
-				results = append(results, *offer)
-			} else {
-				fmt.Println("Offer not found for IID", i)
-				return nil, fmt.Errorf("Offer not found for IID %d", i)
-			}
+			offer := offerMap[i]
+			results = append(results, *offer)
 		}
 	}
 

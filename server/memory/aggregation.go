@@ -2,8 +2,16 @@ package memory
 
 import (
 	"checkmate/types"
+	"math"
 	"slices"
 )
+
+func min(one int, two int) int {
+	if one < two {
+		return one
+	}
+	return two
+}
 
 func getPriceRangeAggregation(opts *types.GetParams,
 	priceRangeInital *BitArray,
@@ -63,91 +71,86 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	seatsCounts := []*types.SeatsCount{}
 	var seat *types.SeatsCount
 
-	vollkaskoCounts.TrueCount = vollkaskoFiltered.CountSetBits()
-	vollkaskoCounts.FalseCount = priceRangeFiltered.size - vollkaskoCounts.TrueCount
-
 	// opts.PriceRangeWidth
-	// for i := 0; i < priceRangeFiltered.size; i++ {
+	for i := 0; i < priceRangeFiltered.size; i++ {
 
-	// 	if offer, ok = OfferMap[int32(i)]; !ok {
-	// 		continue
-	// 	}
+		offer = OfferMap[i]
 
-	// 	if bit, _ := vollkaskoFiltered.GetBit(i); bit == 1 {
+		if bit, _ := vollkaskoFiltered.GetBit(i); bit == 1 {
 
-	// 		if offer.HasVollkasko {
-	// 			vollkaskoCounts.TrueCount++
-	// 		} else {
-	// 			vollkaskoCounts.FalseCount++
-	// 		}
-	// 	}
+			if offer.HasVollkasko {
+				vollkaskoCounts.TrueCount++
+			} else {
+				vollkaskoCounts.FalseCount++
+			}
+		}
 
-	// 	if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
+		if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
 
-	// 		freeKilometers := int32(math.Floor(float64(offer.FreeKilometers)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
+			freeKilometers := int32(math.Floor(float64(offer.FreeKilometers)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
-	// 		if kilometer, ok = freeKilometerRange[freeKilometers]; !ok {
-	// 			kilometer = &types.FreeKilometerRange{
-	// 				Start: int(freeKilometers),
-	// 				End:   int(freeKilometers + minFreeKilometerWidth),
-	// 				Count: 0,
-	// 			}
-	// 			freeKilometerRange[freeKilometers] = kilometer
-	// 			freeKilometerRanges = append(freeKilometerRanges, kilometer)
-	// 		}
+			if kilometer, ok = freeKilometerRange[freeKilometers]; !ok {
+				kilometer = &types.FreeKilometerRange{
+					Start: int(freeKilometers),
+					End:   int(freeKilometers + minFreeKilometerWidth),
+					Count: 0,
+				}
+				freeKilometerRange[freeKilometers] = kilometer
+				freeKilometerRanges = append(freeKilometerRanges, kilometer)
+			}
 
-	// 		kilometer.Count++
-	// 	}
+			kilometer.Count++
+		}
 
-	// 	if bit, _ := carTypeFiltered.GetBit(i); bit == 1 {
+		if bit, _ := carTypeFiltered.GetBit(i); bit == 1 {
 
-	// 		// TODO: speedup
-	// 		switch offer.CarType {
-	// 		case "small":
-	// 			carTypeCounts.Small++
-	// 		case "sports":
-	// 			carTypeCounts.Sports++
-	// 		case "luxury":
-	// 			carTypeCounts.Luxury++
-	// 		case "family":
-	// 			carTypeCounts.Family++
-	// 		}
-	// 	}
+			// TODO: speedup
+			switch offer.CarType {
+			case "small":
+				carTypeCounts.Small++
+			case "sports":
+				carTypeCounts.Sports++
+			case "luxury":
+				carTypeCounts.Luxury++
+			case "family":
+				carTypeCounts.Family++
+			}
+		}
 
-	// 	if bit, _ := numberSeats.GetBit(i); bit == 1 {
+		if bit, _ := numberSeats.GetBit(i); bit == 1 {
 
-	// 		seats := int32(offer.NumberSeats)
+			seats := int32(offer.NumberSeats)
 
-	// 		if seat, ok = seatsCount[seats]; !ok {
-	// 			seat = &types.SeatsCount{
-	// 				NumberSeats: int(seats),
-	// 				Count:       0,
-	// 			}
-	// 			seatsCount[seats] = seat
-	// 			seatsCounts = append(seatsCounts, seat)
-	// 		}
+			if seat, ok = seatsCount[seats]; !ok {
+				seat = &types.SeatsCount{
+					NumberSeats: int(seats),
+					Count:       0,
+				}
+				seatsCount[seats] = seat
+				seatsCounts = append(seatsCounts, seat)
+			}
 
-	// 		seat.Count++
-	// 	}
+			seat.Count++
+		}
 
-	// 	if bit, _ := priceRangeFiltered.GetBit(i); bit == 1 {
+		if bit, _ := priceRangeFiltered.GetBit(i); bit == 1 {
 
-	// 		price := int32(math.Floor(float64(offer.Price)/float64(priceRangeWidth))) * (priceRangeWidth)
+			price := int32(math.Floor(float64(offer.Price)/float64(priceRangeWidth))) * (priceRangeWidth)
 
-	// 		if rang, ok = priceRange[price]; !ok {
-	// 			rang = &types.PriceRange{
-	// 				Start: int(price),
-	// 				End:   int(price + priceRangeWidth),
-	// 				Count: 0,
-	// 			}
-	// 			priceRange[price] = rang
-	// 			priceRanges = append(priceRanges, rang)
-	// 		}
+			if rang, ok = priceRange[price]; !ok {
+				rang = &types.PriceRange{
+					Start: int(price),
+					End:   int(price + priceRangeWidth),
+					Count: 0,
+				}
+				priceRange[price] = rang
+				priceRanges = append(priceRanges, rang)
+			}
 
-	// 		rang.Count++
+			rang.Count++
 
-	// 	}
-	// }
+		}
+	}
 
 	_ = seatsCount
 	_ = carTypeCounts

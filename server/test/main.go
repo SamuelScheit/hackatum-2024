@@ -422,12 +422,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 			os.Exit(1)
 		}
 
-		offer, found := memory.OfferMap[iid]
-
-		if !found {
-			fmt.Println("IID incorrect", value.ID, iid)
-			os.Exit(1)
-		}
+		offer := memory.OfferMap[iid]
 
 		if i < len(expectedResult.Offers) {
 			other := expectedResult.Offers[i]
