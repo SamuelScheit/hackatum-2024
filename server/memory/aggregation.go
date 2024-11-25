@@ -99,7 +99,7 @@ func getAggregation(opts *types.GetParams,
 
 	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
 		priceStart := PriceTree.BitArrayGreaterEqual(i)
-		priceEnd := PriceTree.BitArrayLessEqual(i + priceRangeWidth)
+		priceEnd := PriceTree.BitArrayLessThan(i + priceRangeWidth)
 		priceRange := LogicalAnd(priceRangeFiltered, priceStart)
 		LogicalAndInPlace(priceRange, priceEnd)
 		count := int32(priceRange.CountSetBits())

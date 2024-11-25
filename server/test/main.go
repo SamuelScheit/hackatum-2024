@@ -673,11 +673,11 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		other := result.PriceRanges[i]
 
 		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
-			fmt.Print("PriceRange incorrect ")
+			fmt.Print("PriceRange incorrect")
 
-			fmt.Print("Count: ", value.Count, other.Count)
-			fmt.Print("Start: ", value.Start, other.Start)
-			fmt.Print("End: ", value.End, other.End)
+			fmt.Print(" Count: ", value.Count, other.Count)
+			fmt.Print(" Start: ", value.Start, other.Start)
+			fmt.Print(" End: ", value.End, other.End)
 			os.Exit(1)
 
 		}
