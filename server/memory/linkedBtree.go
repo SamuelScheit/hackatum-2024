@@ -48,6 +48,10 @@ func (t *LinkedBtree) Add(key, value int32) {
 	t.root.Set(key, keys)
 	t.Size++
 
+	t.cacheGreaterEqual.Delete(key)
+	t.cacheLessThan.Delete(key)
+	t.cacheLessEqual.Delete(key)
+
 	// t.cacheGreaterEqual.Range(func(k int32, v *BitArray) bool {
 	// 	if k >= key {
 	// 		v.SetBit(int(value))
