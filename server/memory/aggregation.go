@@ -73,7 +73,7 @@ func getAggregation(opts *types.GetParams,
 
 	for i := freeKilometersStart; i <= MaxKilometer; i += minFreeKilometerWidth {
 		kilometersStart := KilometerTree.BitArrayGreaterEqual(i)
-		kilometersEnd := KilometerTree.BitArrayLessEqual(i + minFreeKilometerWidth)
+		kilometersEnd := KilometerTree.BitArrayLessThan(i + minFreeKilometerWidth)
 		kilometers := LogicalAnd(kilometerFiltered, kilometersStart)
 		LogicalAndInPlace(kilometers, kilometersEnd)
 		count := int32(kilometers.CountSetBits())
