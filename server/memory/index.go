@@ -30,11 +30,11 @@ var EndTree *LinkedBtree
 var PriceTree *LinkedBtree
 var RegionTree *LinkedBtree
 var KilometerTree *LinkedBtree
-var MinKilometer = int32(0)
 var MaxKilometer = int32(0)
-var MinPrice = int32(0)
+var MinKilometer = int32(1 << 30)
+var MinPrice = int32(1 << 30)
 var MaxPrice = int32(0)
-var MinSeats = int32(0)
+var MinSeats = int32(1 << 30)
 var MaxSeats = int32(0)
 
 func InitIndex() {

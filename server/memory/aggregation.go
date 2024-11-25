@@ -114,10 +114,10 @@ func getAggregation(opts *types.GetParams,
 	priceRangeStart = int32(math.Floor(float64(priceRangeStart)/float64(priceRangeWidth))) * priceRangeWidth
 
 	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
-		priceRangeStart := PriceTree.BitArrayGreaterEqual(i, nil)
-		priceRangeEnd := PriceTree.BitArrayLessEqual(i+priceRangeWidth, nil)
-		LogicalAndInPlace(priceRangeFiltered, priceRangeStart)
-		LogicalAndInPlace(priceRangeFiltered, priceRangeEnd)
+		priceStart := PriceTree.BitArrayGreaterEqual(i, nil)
+		priceEnd := PriceTree.BitArrayLessEqual(i+priceRangeWidth, nil)
+		LogicalAndInPlace(priceRangeFiltered, priceStart)
+		LogicalAndInPlace(priceRangeFiltered, priceEnd)
 		count := int32(priceRangeFiltered.CountSetBits())
 		if count == 0 {
 			continue
@@ -132,7 +132,7 @@ func getAggregation(opts *types.GetParams,
 	}
 
 	for i := MinSeats; i <= MaxSeats; i++ {
-		seats, err := GetMinNumberOfSeatsIndex(int(i))
+		seats, err := GetExactNumberOfSeatsIndex(int(i))
 		if err != nil {
 			fmt.Println("not enough seats indexes:", i, err)
 			panic(err)
