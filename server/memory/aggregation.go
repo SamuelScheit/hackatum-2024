@@ -56,34 +56,25 @@ func getPriceRangeAggregation(opts *types.GetParams,
 		Family: LogicalAnd(carTypeFiltered, GetCarTypeIndex("family")).CountSetBits(),
 	}
 
+	vollkaskoCounts := types.VollkaskoCount{
+		TrueCount:  LogicalAnd(vollkaskoFiltered, &VollkaskoIndex).CountSetBits(),
+		FalseCount: LogicalAnd(vollkaskoFiltered, &NoVollkaskoIndex).CountSetBits(),
+	}
+
 	freeKilometerRange := map[int32]*types.FreeKilometerRange{}
 	freeKilometerRanges := []*types.FreeKilometerRange{}
 	minFreeKilometerWidth := int32(opts.MinFreeKilometerWidth)
 
 	var kilometer *types.FreeKilometerRange
 
-	vollkaskoCounts := types.VollkaskoCount{
-		TrueCount:  0,
-		FalseCount: 0,
-	}
-
 	seatsCount := map[int32]*types.SeatsCount{}
 	seatsCounts := []*types.SeatsCount{}
 	var seat *types.SeatsCount
 
 	// opts.PriceRangeWidth
-	for i := 0; i < int(IIDCounter); i++ {
+	for i := 0; i <= int(IIDCounter); i++ {
 
 		offer = OfferMap[i]
-
-		if bit, _ := vollkaskoFiltered.GetBit(i); bit == 1 {
-
-			if offer.HasVollkasko {
-				vollkaskoCounts.TrueCount++
-			} else {
-				vollkaskoCounts.FalseCount++
-			}
-		}
 
 		if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
 

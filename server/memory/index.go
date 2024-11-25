@@ -10,6 +10,7 @@ var DEFAULT_BITLENGTHSIZE = 10000
 
 // vollkasko
 var VollkaskoIndex BitArray
+var NoVollkaskoIndex BitArray
 
 // cartype
 var FamilyCarIndex BitArray
@@ -44,6 +45,7 @@ func InitIndex() {
 	}
 
 	VollkaskoIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	NoVollkaskoIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
 	FamilyCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	LuxuryCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
@@ -64,6 +66,8 @@ func indexKillometer(offer *types.Offer) {
 func indexVollkasko(offer *types.Offer) {
 	if offer.HasVollkasko {
 		VollkaskoIndex.SetBit(int(offer.IID))
+	} else {
+		NoVollkaskoIndex.SetBit(int(offer.IID))
 	}
 }
 
