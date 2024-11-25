@@ -394,14 +394,6 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 	for i, value := range result.Offers {
 
-		if i < len(expectedResult.Offers) {
-			other := expectedResult.Offers[i]
-
-			if (value.ID != other.OfferID) || (other.IsDataCorrect == false) {
-				fmt.Println("Offer differ ", value.ID, other.OfferID)
-			}
-		}
-
 		iid, found := memory.IIDMap[value.ID]
 
 		if !found {
@@ -414,6 +406,20 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		if !found {
 			fmt.Println("IID not found", value.ID, iid)
 			os.Exit(1)
+		}
+
+		if i < len(expectedResult.Offers) {
+			other := expectedResult.Offers[i]
+
+			if (value.ID != other.OfferID) || (other.IsDataCorrect == false) {
+				fmt.Println("Offer differ ", value.ID, other.OfferID)
+
+				otherOffer := memory.OfferMap[memory.IIDMap[other.OfferID]]
+
+				spew.Dump(offer)
+				spew.Dump(otherOffer)
+
+			}
 		}
 
 		fmt.Println("Offer found", value.ID)
