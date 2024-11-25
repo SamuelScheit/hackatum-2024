@@ -35,15 +35,15 @@ func InsertOffers(offers *[]types.Offer) error {
 }
 
 func InsertOffer(offer *types.Offer) {
-	if offer.IID == 0 {
-		IIDCounter++
-		offer.IID = IIDCounter
-		if IIDCounter >= int32(len(OfferMap)) {
-			l := int(IIDCounter) + int(IIDCounter)/2
-			OfferMap = append(OfferMap, make([]*types.Offer, l)...)
-			OfferSearchResultMap = append(OfferSearchResultMap, make([]types.SearchResultOffer, l)...)
-		}
+	// if offer.IID == 0 {
+	offer.IID = IIDCounter
+	IIDCounter++
+	if IIDCounter >= int32(len(OfferMap)) {
+		l := int(IIDCounter) + int(IIDCounter)/2
+		OfferMap = append(OfferMap, make([]*types.Offer, l)...)
+		OfferSearchResultMap = append(OfferSearchResultMap, make([]types.SearchResultOffer, l)...)
 	}
+	// }
 
 	IIDMap[offer.ID] = offer.IID
 	OfferSearchResultMap[offer.IID] = types.SearchResultOffer{

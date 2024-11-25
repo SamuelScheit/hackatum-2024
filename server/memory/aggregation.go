@@ -29,14 +29,6 @@ func getAggregation(opts *types.GetParams,
 	vollkaskoInital *BitArray,
 ) *types.QueryResponse {
 
-	var rang *types.PriceRange
-	priceRange := map[int32]*types.PriceRange{}
-	priceRanges := []*types.PriceRange{}
-	priceRangeWidth := int32(opts.PriceRangeWidth)
-
-	var offer *types.Offer
-	var ok bool
-
 	priceRangeFiltered := LogicalAnd(numberSeatsInital, carTypeInital)
 	LogicalAndInPlace(priceRangeFiltered, freeKilometersInital)
 	LogicalAndInPlace(priceRangeFiltered, vollkaskoInital)
@@ -45,9 +37,10 @@ func getAggregation(opts *types.GetParams,
 	LogicalAndInPlace(carTypeFiltered, freeKilometersInital)
 	LogicalAndInPlace(carTypeFiltered, vollkaskoInital)
 
-	numberSeats := LogicalAnd(carTypeInital, priceRangeInital)
-	LogicalAndInPlace(numberSeats, freeKilometersInital)
-	LogicalAndInPlace(numberSeats, vollkaskoInital)
+	// numberSeats := LogicalAnd(carTypeInital, priceRangeInital)
+	// LogicalAndInPlace(numberSeats, freeKilometersInital)
+	// LogicalAndInPlace(numberSeats, vollkaskoInital)
+	numberSeats := priceRangeInital
 
 	kilometerFiltered := LogicalAnd(carTypeInital, priceRangeInital)
 	LogicalAndInPlace(kilometerFiltered, numberSeatsInital)
@@ -69,35 +62,26 @@ func getAggregation(opts *types.GetParams,
 		FalseCount: LogicalAnd(vollkaskoFiltered, &NoVollkaskoIndex).CountSetBits(),
 	}
 
-	freeKilometerRange := map[int32]*types.FreeKilometerRange{}
 	freeKilometerRanges := []*types.FreeKilometerRange{}
 	minFreeKilometerWidth := int32(opts.MinFreeKilometerWidth)
 
-	var kilometer *types.FreeKilometerRange
-
-	seatsCount := map[int32]*types.SeatsCount{}
-	seatsCounts := []*types.SeatsCount{}
-	var seat *types.SeatsCount
-
 	freeKilometersStart := MinKilometer
-
 	if opts.MinFreeKilometer.Valid {
 		freeKilometersStart = opts.MinFreeKilometer.Int32
 	}
-
 	freeKilometersStart = int32(math.Floor(float64(freeKilometersStart)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
 	for i := freeKilometersStart; i <= MaxKilometer; i += minFreeKilometerWidth {
 		kilometersStart := KilometerTree.BitArrayGreaterEqual(i)
 		kilometersEnd := KilometerTree.BitArrayLessEqual(i + minFreeKilometerWidth)
-		LogicalAndInPlace(kilometerFiltered, kilometersStart)
-		LogicalAndInPlace(kilometerFiltered, kilometersEnd)
-		count := int32(kilometerFiltered.CountSetBits())
+		kilometers := LogicalAnd(kilometerFiltered, kilometersStart)
+		LogicalAndInPlace(kilometers, kilometersEnd)
+		count := int32(kilometers.CountSetBits())
 		if count == 0 {
 			continue
 		}
 
-		kilometer = &types.FreeKilometerRange{
+		kilometer := &types.FreeKilometerRange{
 			Start: i,
 			End:   i + minFreeKilometerWidth,
 			Count: count,
@@ -105,25 +89,25 @@ func getAggregation(opts *types.GetParams,
 		freeKilometerRanges = append(freeKilometerRanges, kilometer)
 	}
 
+	priceRanges := []*types.PriceRange{}
+	priceRangeWidth := int32(opts.PriceRangeWidth)
 	priceRangeStart := MinPrice
-
 	if opts.MinPrice.Valid {
 		priceRangeStart = opts.MinPrice.Int32
 	}
-
 	priceRangeStart = int32(math.Floor(float64(priceRangeStart)/float64(priceRangeWidth))) * priceRangeWidth
 
 	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
 		priceStart := PriceTree.BitArrayGreaterEqual(i)
 		priceEnd := PriceTree.BitArrayLessEqual(i + priceRangeWidth)
-		LogicalAndInPlace(priceRangeFiltered, priceStart)
-		LogicalAndInPlace(priceRangeFiltered, priceEnd)
-		count := int32(priceRangeFiltered.CountSetBits())
+		priceRange := LogicalAnd(priceRangeFiltered, priceStart)
+		LogicalAndInPlace(priceRange, priceEnd)
+		count := int32(priceRange.CountSetBits())
 		if count == 0 {
 			continue
 		}
 
-		rang = &types.PriceRange{
+		rang := &types.PriceRange{
 			Start: i,
 			End:   i + priceRangeWidth,
 			Count: count,
@@ -131,46 +115,26 @@ func getAggregation(opts *types.GetParams,
 		priceRanges = append(priceRanges, rang)
 	}
 
+	seatsCounts := []*types.SeatsCount{}
+
 	for i := MinSeats; i <= MaxSeats; i++ {
 		seats, err := GetExactNumberOfSeatsIndex(int(i))
 		if err != nil {
 			fmt.Println("not enough seats indexes:", i, err)
 			panic(err)
 		}
-		LogicalAndInPlace(numberSeats, seats)
-		count := numberSeats.CountSetBits()
+		seats = LogicalAnd(numberSeats, seats)
+		count := seats.CountSetBits()
 		if count == 0 {
 			continue
 		}
 
-		seat = &types.SeatsCount{
+		seat := &types.SeatsCount{
 			NumberSeats: int(i),
 			Count:       count,
 		}
 		seatsCounts = append(seatsCounts, seat)
 	}
-
-	_ = seatsCount
-	_ = carTypeCounts
-	_ = freeKilometerRange
-	_ = vollkaskoCounts
-	_ = priceRange
-	_ = offer
-	_ = kilometerFiltered
-	_ = priceRangeFiltered
-	_ = carTypeFiltered
-	_ = numberSeats
-	_ = vollkaskoFiltered
-	_ = minFreeKilometerWidth
-	_ = priceRangeWidth
-	_ = carTypeInital
-	_ = freeKilometersInital
-	_ = numberSeatsInital
-	_ = vollkaskoInital
-	_ = kilometer
-	_ = rang
-	_ = seat
-	_ = ok
 
 	slices.SortFunc(priceRanges, func(a, b *types.PriceRange) int {
 		return int(a.Start - b.Start)
