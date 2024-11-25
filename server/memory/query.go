@@ -28,7 +28,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// check EndDate
 	daysEnd := MillisecondsToDays(opts.TimeRangeEnd)
-	EndTree.BitArrayLessThanEqual(daysEnd, temp)
+	EndTree.BitArrayLessEqual(daysEnd, temp)
 	LogicalAndInPlace(result, temp)
 
 	// check daysAmount
@@ -45,7 +45,6 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	vollkaskoInital := result
 	priceRangeInital := result
-	priceRangeMinInital := result
 	carTypeInital := result
 	numberSeatsInital := result
 	freeKilometersInital := result
@@ -55,21 +54,21 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 		carTypeInital = LogicalAnd(result, GetCarTypeIndex(opts.CarType.String))
 	}
 
-	// MaxPrice
+	// MaxPrice (exclusive)
 	if opts.MaxPrice.Valid {
 		priceRangeInital = NewBitArray(result.size)
 		PriceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
 	}
 
-	// MinPrice
+	// MinPrice (inclusive)
 	if opts.MinPrice.Valid {
-		priceRangeMinInital = NewBitArray(result.size)
+		priceRangeMinInital := NewBitArray(result.size)
 
 		PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, priceRangeMinInital)
 		LogicalAndInPlace(priceRangeInital, priceRangeMinInital)
 	}
 
-	// MinFreeKilometer
+	// MinFreeKilometer (inclusive)
 	if opts.MinFreeKilometer.Valid {
 		freeKilometersInital = NewBitArray(result.size)
 		KilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
@@ -80,7 +79,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 		vollkaskoInital = LogicalAnd(result, whereHasVollkaskoIsTrue())
 	}
 
-	// MinNumberSeats
+	// MinNumberSeats (inclusive)
 	if opts.MinNumberSeats.Valid && opts.MinNumberSeats.Int32 > 0 {
 		seats, err := GetNumberOfSeatsIndex(int(opts.MinNumberSeats.Int32))
 		if err != nil {
@@ -155,15 +154,15 @@ func whereRegionBoundsMatch(regionID uint) *BitArray {
 	temp2 := NewBitArray(RegionTree.Size)
 	temp3 := NewBitArray(RegionTree.Size)
 
-	RegionTree.BitArrayGreaterEqual(int32(min), temp1)  // temp1 = x > min
-	RegionTree.BitArrayLessThanEqual(int32(max), temp2) // temp2 = x < max
-	LogicalAndInPlace(temp1, temp2)                     // temp1 = (x > min) AND (x < max)
+	RegionTree.BitArrayGreaterEqual(int32(min), temp1) // temp1 = x > min
+	RegionTree.BitArrayLessEqual(int32(max), temp2)    // temp2 = x < max
+	LogicalAndInPlace(temp1, temp2)                    // temp1 = (x > min) AND (x < max)
 
 	temp2.Clear()
 
-	RegionTree.BitArrayGreaterEqual(int32(min2), temp2)  // temp2 = x > min2
-	RegionTree.BitArrayLessThanEqual(int32(max2), temp3) // temp3 = x < max2
-	LogicalAndInPlace(temp2, temp3)                      // temp2 = (x > min2) AND (x < max2)
+	RegionTree.BitArrayGreaterEqual(int32(min2), temp2) // temp2 = x > min2
+	RegionTree.BitArrayLessEqual(int32(max2), temp3)    // temp3 = x < max2
+	LogicalAndInPlace(temp2, temp3)                     // temp2 = (x > min2) AND (x < max2)
 
 	// Combine both ranges with OR
 	LogicalOrInPlace(temp1, temp2) // temp1 = ((x > min) AND (x < max)) OR ((x > min2) AND (x < max2))

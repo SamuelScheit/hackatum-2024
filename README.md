@@ -1,6 +1,8 @@
 # Check24 Challenge (Team Checkmate)
 
-[The challenge](https://devpost.com/software/checkmate-fvro9a) was to implement a high-performance backend for a car rental application that enables partners to create offers, customers to search and read offers using REST APIs with filters, optimizing read-write performance.
+###### Built by [Josef Schmid](https://www.jgs.dev/about) and [Samuel Scheit](https://samuelscheit.com/)
+
+[The challenge](https://devpost.com/software/checkmate-fvro9a) was to implement a high-performance REST backend for a car rental application that enables partners to create offers, customers to search and read offers in a highly concurrent and efficient manner.
 
 ## How we built it
 
