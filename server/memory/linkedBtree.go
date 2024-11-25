@@ -90,14 +90,12 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 	})
 }
 
-func (t *LinkedBtree) BitArrayGreaterEqual(key int32, resBitArray *BitArray) *BitArray {
+func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
 	if cache, exists := t.cacheGreaterEqual[key]; exists {
-		return cache
+		return cache.Copy()
 	}
 
-	if resBitArray == nil {
-		resBitArray = NewBitArray(t.Size)
-	}
+	resBitArray := NewBitArray(t.Size)
 
 	t.cacheGreaterEqual[key] = resBitArray
 
@@ -106,17 +104,16 @@ func (t *LinkedBtree) BitArrayGreaterEqual(key int32, resBitArray *BitArray) *Bi
 			resBitArray.SetBit(int(iid))
 		}
 	})
+
 	return resBitArray
 }
 
-func (t *LinkedBtree) BitArrayLessThan(key int32, resBitArray *BitArray) *BitArray {
+func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
 	if cache, exists := t.cacheLessThan[key]; exists {
-		return cache
+		return cache.Copy()
 	}
 
-	if resBitArray == nil {
-		resBitArray = NewBitArray(t.Size)
-	}
+	resBitArray := NewBitArray(t.Size)
 
 	t.cacheLessThan[key] = resBitArray
 
@@ -128,14 +125,12 @@ func (t *LinkedBtree) BitArrayLessThan(key int32, resBitArray *BitArray) *BitArr
 	return resBitArray
 }
 
-func (t *LinkedBtree) BitArrayLessEqual(key int32, resBitArray *BitArray) *BitArray {
+func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
 	if cache, exists := t.cacheLessEqual[key]; exists {
-		return cache
+		return cache.Copy()
 	}
 
-	if resBitArray == nil {
-		resBitArray = NewBitArray(t.Size)
-	}
+	resBitArray := NewBitArray(t.Size)
 
 	t.cacheLessEqual[key] = resBitArray
 

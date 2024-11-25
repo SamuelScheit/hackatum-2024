@@ -6,7 +6,7 @@ import (
 )
 
 // indices
-var DEFAULT_BITLENGTHSIZE = 10000
+var DEFAULT_BITLENGTHSIZE = 64
 
 // vollkasko
 var VollkaskoIndex BitArray
@@ -98,7 +98,6 @@ func indexNumSeats(offer *types.Offer) {
 	}
 
 	ExactSeatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
-
 }
 
 func indexDays(offer *types.Offer) {

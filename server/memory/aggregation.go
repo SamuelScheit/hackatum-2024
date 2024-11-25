@@ -88,8 +88,8 @@ func getAggregation(opts *types.GetParams,
 	freeKilometersStart = int32(math.Floor(float64(freeKilometersStart)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
 	for i := freeKilometersStart; i <= MaxKilometer; i += minFreeKilometerWidth {
-		kilometersStart := KilometerTree.BitArrayGreaterEqual(i, nil)
-		kilometersEnd := KilometerTree.BitArrayLessEqual(i+minFreeKilometerWidth, nil)
+		kilometersStart := KilometerTree.BitArrayGreaterEqual(i)
+		kilometersEnd := KilometerTree.BitArrayLessEqual(i + minFreeKilometerWidth)
 		LogicalAndInPlace(kilometerFiltered, kilometersStart)
 		LogicalAndInPlace(kilometerFiltered, kilometersEnd)
 		count := int32(kilometerFiltered.CountSetBits())
@@ -114,8 +114,8 @@ func getAggregation(opts *types.GetParams,
 	priceRangeStart = int32(math.Floor(float64(priceRangeStart)/float64(priceRangeWidth))) * priceRangeWidth
 
 	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
-		priceStart := PriceTree.BitArrayGreaterEqual(i, nil)
-		priceEnd := PriceTree.BitArrayLessEqual(i+priceRangeWidth, nil)
+		priceStart := PriceTree.BitArrayGreaterEqual(i)
+		priceEnd := PriceTree.BitArrayLessEqual(i + priceRangeWidth)
 		LogicalAndInPlace(priceRangeFiltered, priceStart)
 		LogicalAndInPlace(priceRangeFiltered, priceEnd)
 		count := int32(priceRangeFiltered.CountSetBits())

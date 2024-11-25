@@ -385,7 +385,6 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		return
 	}
 	defer resp.Body.Close()
-	return
 	fmt.Println("Request", logEntry.ID)
 
 	body, _ := io.ReadAll(resp.Body)
@@ -641,7 +640,6 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		}
 
 		if !found {
-
 			spew.Dump(result.SeatsCount)
 			fmt.Println("SeatsCount incorrect", numberSeats, expectedResult.SeatsCounts)
 			os.Exit(1)
