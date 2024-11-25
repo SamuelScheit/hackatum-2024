@@ -2,6 +2,7 @@ package memory
 
 import (
 	"fmt"
+	"math/bits"
 )
 
 // BitArray represents a dynamic array of bits, backed by a slice of uint64
@@ -149,13 +150,18 @@ func (ba *BitArray) PrintBits() string {
 }
 
 // countSetBits counts the number of bits set in a BitArray
-func CountSetBits(ba *BitArray, size int, start int) int {
+func (ba *BitArray) CountSetBits() int {
 	count := 0
-	for i := start; i < size; i++ {
-		bit, _ := ba.GetBit(i)
-		if bit == 1 {
-			count++
-		}
+	for i := range ba.data {
+		count += bits.OnesCount64(ba.data[i])
+	}
+	return count
+}
+
+func (ba *BitArray) CountUnsetBits() int {
+	count := 0
+	for i := range ba.data {
+		count += 64 - bits.OnesCount64(ba.data[i])
 	}
 	return count
 }

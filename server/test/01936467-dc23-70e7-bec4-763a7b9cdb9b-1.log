@@ -1,0 +1,1 @@
+{"requestType":"COMPETITOR_ERROR","timestamp":"","log":"offers only cleanup failed: failed to cleanup offers: Delete \"http://team13.hackatum.check24.de/api/offers\": dial tcp 10.0.77.217:80: connect: connection refused"}

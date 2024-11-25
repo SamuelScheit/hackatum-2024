@@ -50,8 +50,8 @@ func TestSimulateAttributes(t *testing.T) {
 	fmt.Printf("Time for counting bits: %v\n", elapsedCount)
 
 	// Output results
-	fmt.Printf("Number of '1' bits in hasVollkasko: %d\n", CountSetBits(hasVollkasko, numEntries, 0))
-	fmt.Printf("Number of '1' bits in isFamilyCar: %d\n", CountSetBits(isFamilyCar, numEntries, 0))
+	fmt.Printf("Number of '1' bits in hasVollkasko: %d\n", hasVollkasko.CountSetBits())
+	fmt.Printf("Number of '1' bits in isFamilyCar: %d\n", isFamilyCar.CountSetBits())
 	fmt.Printf("Number of '1' bits after AND: %d\n", count)
 
 	// Combined operation timing

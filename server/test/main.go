@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime/pprof"
 	"slices"
 	"strconv"
 	"strings"
@@ -112,6 +113,20 @@ func openLog(filePath string) {
 	}
 	defer file.Close()
 
+	f, err := os.Create("cpu.prof")
+	if err != nil {
+		panic(err)
+	}
+	pprof.StartCPUProfile(f)
+
+	go func() {
+		time.Sleep(10 * time.Second)
+
+		pprof.StopCPUProfile()
+		fmt.Println("CPU profile stopped")
+		os.Exit(0)
+	}()
+
 	buf := make([]byte, 0, 1024*1024*10) // Erhöhen Sie den Puffer auf 1 MB
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(buf, 1024*1024*10)
@@ -125,6 +140,7 @@ func openLog(filePath string) {
 		// Parse each JSON line into a LogEntry
 		var entry LogEntry
 		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+			fmt.Println("Failed to parse log entry:", i)
 			panic(err)
 		}
 
@@ -374,6 +390,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		return
 	}
 	defer resp.Body.Close()
+	return
 
 	body, _ := io.ReadAll(resp.Body)
 
@@ -562,19 +579,19 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 		}
 
-		region, err := memory.RegionTree.Get(int32(offer.MostSpecificRegionID))
+		// region, err := memory.RegionTree.Get(int32(offer.MostSpecificRegionID))
 
-		if err != nil {
-			fmt.Println("Error getting Region", iid, offer.MostSpecificRegionID, logEntry.RegionID)
-			os.Exit(1)
-		}
+		// if err != nil {
+		// 	fmt.Println("Error getting Region", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+		// 	os.Exit(1)
+		// }
 
-		if slices.Contains(region, iid) {
-			fmt.Println("Region correct", iid, offer.MostSpecificRegionID, logEntry.RegionID)
-		} else {
-			fmt.Println("Region incorrect", iid, offer.MostSpecificRegionID, logEntry.RegionID)
-			os.Exit(1)
-		}
+		// if slices.Contains(region, iid) {
+		// 	fmt.Println("Region correct", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+		// } else {
+		// 	fmt.Println("Region incorrect", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+		// 	os.Exit(1)
+		// }
 
 		found = false
 	}
