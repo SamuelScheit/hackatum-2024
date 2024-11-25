@@ -106,54 +106,46 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 }
 
 func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
+	value, _ := t.cacheGreaterEqual.LoadOrCompute(key, func() *BitArray {
+		resBitArray := NewBitArray(t.Size)
 
-	if cache, exists := t.cacheGreaterEqual.Load(key); exists {
-		return cache.Copy()
-	}
-
-	resBitArray := NewBitArray(t.Size)
-	t.cacheGreaterEqual.Store(key, resBitArray)
-
-	t.GreaterThanEqual(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			resBitArray.SetBit(int(iid))
-		}
+		t.GreaterThanEqual(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				resBitArray.SetBit(int(iid))
+			}
+		})
+		return resBitArray
 	})
 
-	return resBitArray
+	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
-	if cache, exists := t.cacheLessThan.Load(key); exists {
-		return cache.Copy()
-	}
+	value, _ := t.cacheLessThan.LoadOrCompute(key, func() *BitArray {
+		resBitArray := NewBitArray(t.Size)
 
-	resBitArray := NewBitArray(t.Size)
-
-	t.cacheLessThan.Store(key, resBitArray)
-
-	t.LessThan(key, func(key2 int32, iids []int32) {
-		for _, iid := range iids {
-			resBitArray.SetBit(int(iid))
-		}
+		t.LessThan(key, func(key2 int32, iids []int32) {
+			for _, iid := range iids {
+				resBitArray.SetBit(int(iid))
+			}
+		})
+		return resBitArray
 	})
-	return resBitArray
+
+	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
-	if cache, exists := t.cacheLessEqual.Load(key); exists {
-		return cache.Copy()
-	}
+	value, _ := t.cacheLessEqual.LoadOrCompute(key, func() *BitArray {
+		resBitArray := NewBitArray(t.Size)
 
-	resBitArray := NewBitArray(t.Size)
-
-	t.cacheLessEqual.Store(key, resBitArray)
-
-	t.LessThanEqual(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			resBitArray.SetBit(int(iid))
-		}
+		t.LessThanEqual(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				resBitArray.SetBit(int(iid))
+			}
+		})
+		return resBitArray
 	})
 
-	return resBitArray
+	return value.Copy()
 }

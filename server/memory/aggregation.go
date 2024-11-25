@@ -37,10 +37,9 @@ func getAggregation(opts *types.GetParams,
 	LogicalAndInPlace(carTypeFiltered, freeKilometersInital)
 	LogicalAndInPlace(carTypeFiltered, vollkaskoInital)
 
-	// numberSeats := LogicalAnd(carTypeInital, priceRangeInital)
-	// LogicalAndInPlace(numberSeats, freeKilometersInital)
-	// LogicalAndInPlace(numberSeats, vollkaskoInital)
-	numberSeats := priceRangeInital
+	numberSeats := LogicalAnd(carTypeInital, priceRangeInital)
+	LogicalAndInPlace(numberSeats, freeKilometersInital)
+	LogicalAndInPlace(numberSeats, vollkaskoInital)
 
 	kilometerFiltered := LogicalAnd(carTypeInital, priceRangeInital)
 	LogicalAndInPlace(kilometerFiltered, numberSeatsInital)
@@ -65,11 +64,7 @@ func getAggregation(opts *types.GetParams,
 	freeKilometerRanges := []*types.FreeKilometerRange{}
 	minFreeKilometerWidth := int32(opts.MinFreeKilometerWidth)
 
-	freeKilometersStart := MinKilometer
-	if opts.MinFreeKilometer.Valid {
-		freeKilometersStart = opts.MinFreeKilometer.Int32
-	}
-	freeKilometersStart = int32(math.Floor(float64(freeKilometersStart)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
+	freeKilometersStart := int32(math.Floor(float64(MinKilometer)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
 	for i := freeKilometersStart; i <= MaxKilometer; i += minFreeKilometerWidth {
 		kilometersStart := KilometerTree.BitArrayGreaterEqual(i)
@@ -91,11 +86,7 @@ func getAggregation(opts *types.GetParams,
 
 	priceRanges := []*types.PriceRange{}
 	priceRangeWidth := int32(opts.PriceRangeWidth)
-	priceRangeStart := MinPrice
-	if opts.MinPrice.Valid {
-		priceRangeStart = opts.MinPrice.Int32
-	}
-	priceRangeStart = int32(math.Floor(float64(priceRangeStart)/float64(priceRangeWidth))) * priceRangeWidth
+	priceRangeStart := int32(math.Floor(float64(MinPrice)/float64(priceRangeWidth))) * priceRangeWidth
 
 	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
 		priceStart := PriceTree.BitArrayGreaterEqual(i)
