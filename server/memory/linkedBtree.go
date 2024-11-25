@@ -94,6 +94,11 @@ func (t *LinkedBtree) BitArrayGreaterEqual(key int32, resBitArray *BitArray) *Bi
 	if cache, exists := t.cacheGreaterEqual[key]; exists {
 		return cache
 	}
+
+	if resBitArray == nil {
+		resBitArray = NewBitArray(t.Size)
+	}
+
 	t.cacheGreaterEqual[key] = resBitArray
 
 	t.GreaterThanEqual(key, func(key int32, iids []int32) {
@@ -109,6 +114,10 @@ func (t *LinkedBtree) BitArrayLessThan(key int32, resBitArray *BitArray) *BitArr
 		return cache
 	}
 
+	if resBitArray == nil {
+		resBitArray = NewBitArray(t.Size)
+	}
+
 	t.cacheLessThan[key] = resBitArray
 
 	t.LessThan(key, func(key2 int32, iids []int32) {
@@ -122,6 +131,10 @@ func (t *LinkedBtree) BitArrayLessThan(key int32, resBitArray *BitArray) *BitArr
 func (t *LinkedBtree) BitArrayLessEqual(key int32, resBitArray *BitArray) *BitArray {
 	if cache, exists := t.cacheLessEqual[key]; exists {
 		return cache
+	}
+
+	if resBitArray == nil {
+		resBitArray = NewBitArray(t.Size)
 	}
 
 	t.cacheLessEqual[key] = resBitArray
