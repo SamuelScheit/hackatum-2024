@@ -85,7 +85,11 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// MinNumberSeats
 	if opts.MinNumberSeats.Valid && opts.MinNumberSeats.Int32 > 0 {
-		numberSeatsInital = LogicalAnd(result, whereNumberOfSeatsIs(int(opts.MinNumberSeats.Int32)))
+		seats, err := whereNumberOfSeatsIs(int(opts.MinNumberSeats.Int32))
+		if err != nil {
+			return nil, err
+		}
+		numberSeatsInital = LogicalAnd(result, seats)
 	}
 
 	response := getPriceRangeAggregation(opts, priceRangeInital, carTypeInital, numberSeatsInital, freeKilometersInital, vollkaskoInital)
@@ -175,26 +179,11 @@ func whereHasVollkaskoIsTrue() *BitArray {
 	return &vollkaskoIndex
 }
 
-func whereNumberOfSeatsIs(amount int) *BitArray {
-	switch amount {
-	case 1:
-		return &exactlyOneSeatCarIndex
-	case 2:
-		return &exactlyTwoSeatCarIndex
-	case 3:
-		return &exactlyThreeSeatCarIndex
-	case 4:
-		return &exactlyFourSeatCarIndex
-	case 5:
-		return &exactlyFiveSeatCarIndex
-	case 6:
-		return &exactlySixSeatCarIndex
-	case 7:
-		return &exactlySevenSeatCarIndex
-	case 8:
-		return &exactlyEightSeatCarIndex
+func whereNumberOfSeatsIs(amount int) (*BitArray, error) {
+	if amount >= len(seatIndexMap) {
+		return nil, fmt.Errorf("amount of seats is too high")
 	}
-	panic("Invalid number of seats: " + string(amount))
+	return &seatIndexMap[amount], nil
 }
 
 func whereCarTypIs(cartype string) *BitArray {

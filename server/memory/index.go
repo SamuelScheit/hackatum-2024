@@ -18,14 +18,7 @@ var sportsCarIndex BitArray
 var smallCarIndex BitArray
 
 // numSeats
-var exactlyOneSeatCarIndex BitArray
-var exactlyTwoSeatCarIndex BitArray
-var exactlyThreeSeatCarIndex BitArray
-var exactlyFourSeatCarIndex BitArray
-var exactlyFiveSeatCarIndex BitArray
-var exactlySixSeatCarIndex BitArray
-var exactlySevenSeatCarIndex BitArray
-var exactlyEightSeatCarIndex BitArray
+var seatIndexMap []BitArray
 
 // days
 var daysIndexMap []BitArray
@@ -46,7 +39,7 @@ func InitIndex() {
 
 	daysIndexMap = make([]BitArray, 100)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < len(daysIndexMap); i++ {
 		daysIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	}
 
@@ -57,15 +50,11 @@ func InitIndex() {
 	sportsCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	smallCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
-	exactlyOneSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlyTwoSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlyThreeSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlyFourSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlyFiveSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlySixSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlySevenSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
-	exactlyEightSeatCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	seatIndexMap = make([]BitArray, 10)
 
+	for i := 0; i < len(seatIndexMap); i++ {
+		seatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	}
 }
 
 func indexVollkasko(offer *types.Offer) {
@@ -88,24 +77,12 @@ func indexCarType(offer *types.Offer) {
 }
 
 func indexNumSeats(offer *types.Offer) {
-	switch offer.NumberSeats {
-	case 1:
-		exactlyOneSeatCarIndex.SetBit(int(offer.IID))
-	case 2:
-		exactlyTwoSeatCarIndex.SetBit(int(offer.IID))
-	case 3:
-		exactlyThreeSeatCarIndex.SetBit(int(offer.IID))
-	case 4:
-		exactlyFourSeatCarIndex.SetBit(int(offer.IID))
-	case 5:
-		exactlyFiveSeatCarIndex.SetBit(int(offer.IID))
-	case 6:
-		exactlySixSeatCarIndex.SetBit(int(offer.IID))
-	case 7:
-		exactlySevenSeatCarIndex.SetBit(int(offer.IID))
-	case 8:
-		exactlyEightSeatCarIndex.SetBit(int(offer.IID))
+	if int32(offer.NumberSeats) >= int32(len(seatIndexMap)) {
+		for i := len(seatIndexMap); i <= int(offer.NumberSeats); i++ {
+			seatIndexMap = append(seatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
+		}
 	}
+	seatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
 }
 
 func indexDays(offer *types.Offer) {
@@ -116,7 +93,6 @@ func indexDays(offer *types.Offer) {
 }
 
 func indexRegion(offer *types.Offer) {
-	// regionTree.Add(offer.IID, int32(offer.MostSpecificRegionID))
 	regionTree.Add(int32(offer.MostSpecificRegionID), offer.IID)
 }
 
