@@ -44,7 +44,15 @@ func InsertOffer(offer *types.Offer) {
 		ID:   offer.ID,
 		Data: offer.Data,
 	}
-	OfferMap[offer.IID] = offer
+	copyOfferMap := make(map[int32]*types.Offer, len(OfferMap))
+	for k, v := range OfferMap {
+		copyOfferMap[k] = v
+	}
+
+	copyOfferMap[offer.IID] = offer
+
+	OfferMap = copyOfferMap
+
 	PriceTree.Add(offer.Price, offer.IID)
 
 	indexKillometer(offer)

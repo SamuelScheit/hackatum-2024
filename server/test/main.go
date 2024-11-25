@@ -382,11 +382,15 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 	json.Unmarshal(body, &result)
 
 	var expectedResult GetResponse
+	var actualLogResult GetResponse
 
 	json.Unmarshal(*log.ExpectedResult, &expectedResult)
+	json.Unmarshal(*log.ActualResult, &actualLogResult)
+
+	fmt.Println("Request", logEntry.ID)
 
 	if len(expectedResult.Offers) != len(result.Offers) {
-		fmt.Println("Offers differ: Expected:", len(expectedResult.Offers), "Actual:", len(result.Offers), expectedResult.Offers, result.Offers)
+		fmt.Println("Offers incorrect: Expected:", len(expectedResult.Offers), "Actual:", len(result.Offers), expectedResult.Offers, result.Offers)
 		fmt.Println(result.Offers, logEntry.ID)
 	} else {
 		fmt.Println("Offers correct length", result.Offers)
@@ -397,14 +401,14 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		iid, found := memory.IIDMap[value.ID]
 
 		if !found {
-			fmt.Println("IID not found", value.ID)
+			fmt.Println("IID incorrect", value.ID)
 			os.Exit(1)
 		}
 
 		offer, found := memory.OfferMap[iid]
 
 		if !found {
-			fmt.Println("IID not found", value.ID, iid)
+			fmt.Println("IID incorrect", value.ID, iid)
 			os.Exit(1)
 		}
 
@@ -412,7 +416,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 			other := expectedResult.Offers[i]
 
 			if (value.ID != other.OfferID) || (other.IsDataCorrect == false) {
-				fmt.Println("Offer differ ", value.ID, other.OfferID)
+				fmt.Println("Offer incorrect ", value.ID, other.OfferID)
 
 				otherOffer := memory.OfferMap[memory.IIDMap[other.OfferID]]
 
@@ -438,7 +442,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		}
 
 		if daysBit == 0 {
-			fmt.Println("not found in DaysIndexMap", iid, days)
+			fmt.Println("incorrect in DaysIndexMap", iid, days)
 			os.Exit(1)
 		} else {
 			fmt.Println("found in DaysIndexMap", iid, days)
@@ -594,12 +598,13 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		}
 
 		if value != (other) {
-			fmt.Println("CarTypeCount differ", key, value, other)
+			fmt.Println("CarTypeCount incorrect", key, value, other)
+			os.Exit(1)
 		}
 	}
 
 	if len(expectedResult.SeatsCounts) > len(result.SeatsCount) {
-		fmt.Println("SeatsCount differ: Expected:", len(expectedResult.SeatsCounts), "Actual:", len(result.SeatsCount), expectedResult.SeatsCounts)
+		fmt.Println("SeatsCount incorrect: Expected:", len(expectedResult.SeatsCounts), "Actual:", len(result.SeatsCount), expectedResult.SeatsCounts)
 		os.Exit(1)
 	}
 
@@ -611,7 +616,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		for _, seat := range result.SeatsCount {
 			if seat.NumberSeats == int(numberSeats) {
 				if value != int(seat.Count) {
-					fmt.Println("SeatsCount differ ", seat.NumberSeats, seat.Count, value, expectedResult.SeatsCounts)
+					fmt.Println("SeatsCount incorrect ", seat.NumberSeats, seat.Count, value, expectedResult.SeatsCounts)
 					os.Exit(1)
 
 				} else {
@@ -627,7 +632,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		if !found {
 
 			spew.Dump(result.SeatsCount)
-			fmt.Println("SeatsCount not found", numberSeats, expectedResult.SeatsCounts)
+			fmt.Println("SeatsCount incorrect", numberSeats, expectedResult.SeatsCounts)
 			os.Exit(1)
 		}
 
@@ -635,12 +640,13 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 	for i, value := range expectedResult.FreeKilometerRanges {
 		if i >= len(result.FreeKilometerRange) {
-			fmt.Println("FreeKilometerRanges differ: Expected:", len(expectedResult.FreeKilometerRanges), "Actual:", len(result.FreeKilometerRange), expectedResult.FreeKilometerRanges)
+			fmt.Println("FreeKilometerRanges incorrect: Expected:", len(expectedResult.FreeKilometerRanges), "Actual:", len(result.FreeKilometerRange), expectedResult.FreeKilometerRanges)
+			os.Exit(1)
 		}
 		other := result.FreeKilometerRange[i]
 
 		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
-			fmt.Print("FreeKilometerRange differ")
+			fmt.Print("FreeKilometerRange incorrect")
 
 			fmt.Print(" Count: ", value.Count, other.Count)
 			fmt.Print(" Start: ", value.Start, other.Start)
@@ -652,13 +658,13 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 	for i, value := range expectedResult.PriceRanges {
 		if i >= len(result.PriceRanges) {
-			fmt.Println("PriceRanges differ: Expected:", len(expectedResult.PriceRanges), "Actual:", len(result.PriceRanges), expectedResult.PriceRanges)
+			fmt.Println("PriceRanges incorrect: Expected:", len(expectedResult.PriceRanges), "Actual:", len(result.PriceRanges), expectedResult.PriceRanges)
 			os.Exit(1)
 		}
 		other := result.PriceRanges[i]
 
 		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
-			fmt.Print("PriceRange differ ")
+			fmt.Print("PriceRange incorrect ")
 
 			fmt.Print("Count: ", value.Count, other.Count)
 			fmt.Print("Start: ", value.Start, other.Start)
