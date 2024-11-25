@@ -92,11 +92,15 @@ func getAggregation(opts *types.GetParams,
 		kilometersEnd := KilometerTree.BitArrayLessEqual(i+minFreeKilometerWidth, nil)
 		LogicalAndInPlace(kilometerFiltered, kilometersStart)
 		LogicalAndInPlace(kilometerFiltered, kilometersEnd)
+		count := int32(kilometerFiltered.CountSetBits())
+		if count == 0 {
+			continue
+		}
 
 		kilometer = &types.FreeKilometerRange{
 			Start: i,
 			End:   i + minFreeKilometerWidth,
-			Count: int32(kilometerFiltered.CountSetBits()),
+			Count: count,
 		}
 		freeKilometerRanges = append(freeKilometerRanges, kilometer)
 	}
@@ -114,11 +118,15 @@ func getAggregation(opts *types.GetParams,
 		priceRangeEnd := PriceTree.BitArrayLessEqual(i+priceRangeWidth, nil)
 		LogicalAndInPlace(priceRangeFiltered, priceRangeStart)
 		LogicalAndInPlace(priceRangeFiltered, priceRangeEnd)
+		count := int32(priceRangeFiltered.CountSetBits())
+		if count == 0 {
+			continue
+		}
 
 		rang = &types.PriceRange{
 			Start: i,
 			End:   i + priceRangeWidth,
-			Count: int32(priceRangeFiltered.CountSetBits()),
+			Count: count,
 		}
 		priceRanges = append(priceRanges, rang)
 	}
@@ -130,10 +138,14 @@ func getAggregation(opts *types.GetParams,
 			panic(err)
 		}
 		LogicalAndInPlace(numberSeats, seats)
+		count := numberSeats.CountSetBits()
+		if count == 0 {
+			continue
+		}
 
 		seat = &types.SeatsCount{
 			NumberSeats: int(i),
-			Count:       int(numberSeats.CountSetBits()),
+			Count:       count,
 		}
 		seatsCounts = append(seatsCounts, seat)
 	}
