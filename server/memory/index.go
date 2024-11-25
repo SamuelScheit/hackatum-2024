@@ -20,6 +20,7 @@ var SmallCarIndex BitArray
 
 // numSeats
 var MinSeatIndexMap []BitArray
+var ExactSeatIndexMap []BitArray
 
 // days
 var DaysIndexMap []BitArray
@@ -29,6 +30,12 @@ var EndTree *LinkedBtree
 var PriceTree *LinkedBtree
 var RegionTree *LinkedBtree
 var KilometerTree *LinkedBtree
+var MinKilometer = int32(0)
+var MaxKilometer = int32(0)
+var MinPrice = int32(0)
+var MaxPrice = int32(0)
+var MinSeats = int32(0)
+var MaxSeats = int32(0)
 
 func InitIndex() {
 	PriceTree = NewLinkedBtree()
@@ -53,9 +60,11 @@ func InitIndex() {
 	SmallCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
 	MinSeatIndexMap = make([]BitArray, 10)
+	ExactSeatIndexMap = make([]BitArray, 10)
 
 	for i := 0; i < len(MinSeatIndexMap); i++ {
 		MinSeatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+		ExactSeatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	}
 }
 
@@ -80,12 +89,16 @@ func indexNumSeats(offer *types.Offer) {
 	if int32(offer.NumberSeats) >= int32(len(MinSeatIndexMap)) {
 		for i := len(MinSeatIndexMap); i <= int(offer.NumberSeats); i++ {
 			MinSeatIndexMap = append(MinSeatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
+			ExactSeatIndexMap = append(ExactSeatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
 		}
 	}
 
-	for i := offer.NumberSeats; i < len(MinSeatIndexMap); i++ {
+	for i := int(offer.NumberSeats); i < len(MinSeatIndexMap); i++ {
 		MinSeatIndexMap[i].SetBit(int(offer.IID))
 	}
+
+	ExactSeatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
+
 }
 
 func indexDays(offer *types.Offer) {

@@ -10,9 +10,9 @@ type QueryResponse struct {
 }
 
 type PriceRange struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
-	Count int `json:"count"`
+	Start int32 `json:"start"`
+	End   int32 `json:"end"`
+	Count int32 `json:"count"`
 }
 
 type CarTypeCount struct {
@@ -28,9 +28,9 @@ type SeatsCount struct {
 }
 
 type FreeKilometerRange struct {
-	Start int `json:"start"`
-	End   int `json:"end"`
-	Count int `json:"count"`
+	Start int32 `json:"start"`
+	End   int32 `json:"end"`
+	Count int32 `json:"count"`
 }
 
 type VollkaskoCount struct {

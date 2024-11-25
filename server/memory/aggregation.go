@@ -2,18 +2,26 @@ package memory
 
 import (
 	"checkmate/types"
+	"fmt"
 	"math"
 	"slices"
 )
 
-func min(one int, two int) int {
+func min(one int32, two int32) int32 {
 	if one < two {
 		return one
 	}
 	return two
 }
 
-func getPriceRangeAggregation(opts *types.GetParams,
+func max(one int32, two int32) int32 {
+	if one > two {
+		return one
+	}
+	return two
+}
+
+func getAggregation(opts *types.GetParams,
 	priceRangeInital *BitArray,
 	carTypeInital *BitArray,
 	numberSeatsInital *BitArray,
@@ -71,61 +79,63 @@ func getPriceRangeAggregation(opts *types.GetParams,
 	seatsCounts := []*types.SeatsCount{}
 	var seat *types.SeatsCount
 
-	// opts.PriceRangeWidth
-	for i := 0; i <= int(IIDCounter); i++ {
+	freeKilometersStart := MinKilometer
 
-		offer = OfferMap[i]
+	if opts.MinFreeKilometer.Valid {
+		freeKilometersStart = opts.MinFreeKilometer.Int32
+	}
 
-		if bit, _ := kilometerFiltered.GetBit(i); bit == 1 {
+	freeKilometersStart = int32(math.Floor(float64(freeKilometersStart)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
 
-			freeKilometers := int32(math.Floor(float64(offer.FreeKilometers)/float64(minFreeKilometerWidth))) * minFreeKilometerWidth
+	for i := freeKilometersStart; i <= MaxKilometer; i += minFreeKilometerWidth {
+		kilometersStart := KilometerTree.BitArrayGreaterEqual(i, nil)
+		kilometersEnd := KilometerTree.BitArrayLessEqual(i+minFreeKilometerWidth, nil)
+		LogicalAndInPlace(kilometerFiltered, kilometersStart)
+		LogicalAndInPlace(kilometerFiltered, kilometersEnd)
 
-			if kilometer, ok = freeKilometerRange[freeKilometers]; !ok {
-				kilometer = &types.FreeKilometerRange{
-					Start: int(freeKilometers),
-					End:   int(freeKilometers + minFreeKilometerWidth),
-					Count: 0,
-				}
-				freeKilometerRange[freeKilometers] = kilometer
-				freeKilometerRanges = append(freeKilometerRanges, kilometer)
-			}
-
-			kilometer.Count++
+		kilometer = &types.FreeKilometerRange{
+			Start: i,
+			End:   i + minFreeKilometerWidth,
+			Count: int32(kilometerFiltered.CountSetBits()),
 		}
+		freeKilometerRanges = append(freeKilometerRanges, kilometer)
+	}
 
-		if bit, _ := numberSeats.GetBit(i); bit == 1 {
+	priceRangeStart := MinPrice
 
-			seats := int32(offer.NumberSeats)
+	if opts.MinPrice.Valid {
+		priceRangeStart = opts.MinPrice.Int32
+	}
 
-			if seat, ok = seatsCount[seats]; !ok {
-				seat = &types.SeatsCount{
-					NumberSeats: int(seats),
-					Count:       0,
-				}
-				seatsCount[seats] = seat
-				seatsCounts = append(seatsCounts, seat)
-			}
+	priceRangeStart = int32(math.Floor(float64(priceRangeStart)/float64(priceRangeWidth))) * priceRangeWidth
 
-			seat.Count++
+	for i := priceRangeStart; i <= MaxPrice; i += priceRangeWidth {
+		priceRangeStart := PriceTree.BitArrayGreaterEqual(i, nil)
+		priceRangeEnd := PriceTree.BitArrayLessEqual(i+priceRangeWidth, nil)
+		LogicalAndInPlace(priceRangeFiltered, priceRangeStart)
+		LogicalAndInPlace(priceRangeFiltered, priceRangeEnd)
+
+		rang = &types.PriceRange{
+			Start: i,
+			End:   i + priceRangeWidth,
+			Count: int32(priceRangeFiltered.CountSetBits()),
 		}
+		priceRanges = append(priceRanges, rang)
+	}
 
-		if bit, _ := priceRangeFiltered.GetBit(i); bit == 1 {
-
-			price := int32(math.Floor(float64(offer.Price)/float64(priceRangeWidth))) * (priceRangeWidth)
-
-			if rang, ok = priceRange[price]; !ok {
-				rang = &types.PriceRange{
-					Start: int(price),
-					End:   int(price + priceRangeWidth),
-					Count: 0,
-				}
-				priceRange[price] = rang
-				priceRanges = append(priceRanges, rang)
-			}
-
-			rang.Count++
-
+	for i := MinSeats; i <= MaxSeats; i++ {
+		seats, err := GetMinNumberOfSeatsIndex(int(i))
+		if err != nil {
+			fmt.Println("not enough seats indexes:", i, err)
+			panic(err)
 		}
+		LogicalAndInPlace(numberSeats, seats)
+
+		seat = &types.SeatsCount{
+			NumberSeats: int(i),
+			Count:       int(numberSeats.CountSetBits()),
+		}
+		seatsCounts = append(seatsCounts, seat)
 	}
 
 	_ = seatsCount

@@ -18,17 +18,17 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// check startDate
 	daysStart := MillisecondsToDays(opts.TimeRangeStart)
-	StartTree.BitArrayGreaterEqual(daysStart, temp)
+	temp = StartTree.BitArrayGreaterEqual(daysStart, temp)
 	LogicalAndInPlace(result, temp)
 
 	// offer.start >= request.startDate
 	// request.startDate <= offer.start
 
-	temp.Clear()
+	temp = NewBitArray(result.size)
 
 	// check EndDate
 	daysEnd := MillisecondsToDays(opts.TimeRangeEnd)
-	EndTree.BitArrayLessEqual(daysEnd, temp)
+	temp = EndTree.BitArrayLessEqual(daysEnd, temp)
 	LogicalAndInPlace(result, temp)
 
 	// check daysAmount
@@ -57,21 +57,21 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	// MaxPrice (exclusive)
 	if opts.MaxPrice.Valid {
 		priceRangeInital = NewBitArray(result.size)
-		PriceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
+		priceRangeInital = PriceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
 	}
 
 	// MinPrice (inclusive)
 	if opts.MinPrice.Valid {
 		priceRangeMinInital := NewBitArray(result.size)
 
-		PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, priceRangeMinInital)
+		priceRangeMinInital = PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, priceRangeMinInital)
 		LogicalAndInPlace(priceRangeInital, priceRangeMinInital)
 	}
 
 	// MinFreeKilometer (inclusive)
 	if opts.MinFreeKilometer.Valid {
 		freeKilometersInital = NewBitArray(result.size)
-		KilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
+		freeKilometersInital = KilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
 	}
 
 	// OnlyVallkasko
@@ -81,14 +81,14 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// MinNumberSeats (inclusive)
 	if opts.MinNumberSeats.Valid && opts.MinNumberSeats.Int32 > 0 {
-		seats, err := GetNumberOfSeatsIndex(int(opts.MinNumberSeats.Int32))
+		seats, err := GetMinNumberOfSeatsIndex(int(opts.MinNumberSeats.Int32))
 		if err != nil {
 			return nil, err
 		}
 		numberSeatsInital = LogicalAnd(result, seats)
 	}
 
-	response := getPriceRangeAggregation(opts, priceRangeInital, carTypeInital, numberSeatsInital, freeKilometersInital, vollkaskoInital)
+	response := getAggregation(opts, priceRangeInital, carTypeInital, numberSeatsInital, freeKilometersInital, vollkaskoInital)
 
 	if opts.CarType.Valid {
 		LogicalAndInPlace(result, carTypeInital)
@@ -171,15 +171,15 @@ func whereRegionBoundsMatch(regionID uint) *BitArray {
 	temp2 := NewBitArray(RegionTree.Size)
 	temp3 := NewBitArray(RegionTree.Size)
 
-	RegionTree.BitArrayGreaterEqual(int32(min), temp1) // temp1 = x > min
-	RegionTree.BitArrayLessEqual(int32(max), temp2)    // temp2 = x < max
-	LogicalAndInPlace(temp1, temp2)                    // temp1 = (x > min) AND (x < max)
+	temp1 = RegionTree.BitArrayGreaterEqual(int32(min), temp1) // temp1 = x > min
+	temp2 = RegionTree.BitArrayLessEqual(int32(max), temp2)    // temp2 = x < max
+	LogicalAndInPlace(temp1, temp2)                            // temp1 = (x > min) AND (x < max)
 
 	temp2.Clear()
 
-	RegionTree.BitArrayGreaterEqual(int32(min2), temp2) // temp2 = x > min2
-	RegionTree.BitArrayLessEqual(int32(max2), temp3)    // temp3 = x < max2
-	LogicalAndInPlace(temp2, temp3)                     // temp2 = (x > min2) AND (x < max2)
+	temp2 = RegionTree.BitArrayGreaterEqual(int32(min2), temp2) // temp2 = x > min2
+	temp3 = RegionTree.BitArrayLessEqual(int32(max2), temp3)    // temp3 = x < max2
+	LogicalAndInPlace(temp2, temp3)                             // temp2 = (x > min2) AND (x < max2)
 
 	// Combine both ranges with OR
 	LogicalOrInPlace(temp1, temp2) // temp1 = ((x > min) AND (x < max)) OR ((x > min2) AND (x < max2))
@@ -192,11 +192,18 @@ func whereHasVollkaskoIsTrue() *BitArray {
 	return &VollkaskoIndex
 }
 
-func GetNumberOfSeatsIndex(amount int) (*BitArray, error) {
+func GetMinNumberOfSeatsIndex(amount int) (*BitArray, error) {
 	if amount >= len(MinSeatIndexMap) {
 		return nil, fmt.Errorf("amount of seats is too high")
 	}
 	return &MinSeatIndexMap[amount], nil
+}
+
+func GetExactNumberOfSeatsIndex(amount int) (*BitArray, error) {
+	if amount >= len(MinSeatIndexMap) {
+		return nil, fmt.Errorf("amount of seats is too high")
+	}
+	return &ExactSeatIndexMap[amount], nil
 }
 
 func GetCarTypeIndex(cartype string) *BitArray {

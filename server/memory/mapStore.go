@@ -14,8 +14,8 @@ var IIDMap map[string]int32
 var IIDCounter int32
 
 func InitMapStore() {
-	OfferMap = make([]*types.Offer, DEFAULT_BITLENGTHSIZE/64)
-	OfferSearchResultMap = make([]types.SearchResultOffer, DEFAULT_BITLENGTHSIZE/64)
+	OfferMap = make([]*types.Offer, DEFAULT_BITLENGTHSIZE)
+	OfferSearchResultMap = make([]types.SearchResultOffer, DEFAULT_BITLENGTHSIZE)
 	IIDMap = make(map[string]int32)
 
 	IIDCounter = 0
@@ -39,7 +39,7 @@ func InsertOffer(offer *types.Offer) {
 		IIDCounter++
 		offer.IID = IIDCounter
 		if IIDCounter >= int32(len(OfferMap)) {
-			l := int(IIDCounter) - len(OfferMap) + DEFAULT_BITLENGTHSIZE/64
+			l := int(IIDCounter) + int(IIDCounter)/2
 			OfferMap = append(OfferMap, make([]*types.Offer, l)...)
 			OfferSearchResultMap = append(OfferSearchResultMap, make([]types.SearchResultOffer, l)...)
 		}
@@ -53,6 +53,13 @@ func InsertOffer(offer *types.Offer) {
 	OfferMap[offer.IID] = offer
 
 	PriceTree.Add(offer.Price, offer.IID)
+
+	MinPrice = min(MinPrice, offer.Price)
+	MaxPrice = max(MaxPrice, offer.Price)
+	MinKilometer = min(MinKilometer, offer.FreeKilometers)
+	MaxKilometer = max(MaxKilometer, offer.FreeKilometers)
+	MinSeats = min(MinSeats, offer.NumberSeats)
+	MaxSeats = max(MaxSeats, offer.NumberSeats)
 
 	indexKillometer(offer)
 	indexVollkasko(offer)

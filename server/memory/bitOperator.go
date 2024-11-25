@@ -42,6 +42,12 @@ func (ba *BitArray) Clear() {
 	ba.size = len(ba.data) * 64
 }
 
+func (ba *BitArray) CopyFrom(other *BitArray) {
+	ba.size = other.size
+	ba.data = make([]uint64, len(other.data))
+	copy(ba.data, other.data)
+}
+
 // SetBit sets the bit at position pos to 1, expanding the BitArray if needed
 func (ba *BitArray) SetBit(pos int) {
 	if pos < 0 {

@@ -40,6 +40,7 @@ func main() {
 			openLog(entry.Name())
 		}
 	}
+
 }
 
 type LogEntry struct {
@@ -91,9 +92,9 @@ type GetOffer struct {
 }
 
 type GetRangeCount struct {
-	Start int `json:"Start"`
-	End   int `json:"End"`
-	Count int `json:"Count"`
+	Start int32 `json:"Start"`
+	End   int32 `json:"End"`
+	Count int32 `json:"Count"`
 }
 
 type GetVollkaskoCountStruct struct {
@@ -119,14 +120,6 @@ func openLog(filePath string) {
 	}
 	pprof.StartCPUProfile(f)
 
-	go func() {
-		time.Sleep(10 * time.Second)
-
-		pprof.StopCPUProfile()
-		fmt.Println("CPU profile stopped")
-		os.Exit(0)
-	}()
-
 	buf := make([]byte, 0, 1024*1024*10) // Erhöhen Sie den Puffer auf 1 MB
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(buf, 1024*1024*10)
@@ -140,8 +133,8 @@ func openLog(filePath string) {
 		// Parse each JSON line into a LogEntry
 		var entry LogEntry
 		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			fmt.Println("Failed to parse log entry:", i)
-			panic(err)
+			fmt.Println("Failed to parse log entry:", i, err)
+			break
 		}
 
 		if entry.RequestType == "PUSH" {
@@ -150,6 +143,8 @@ func openLog(filePath string) {
 			handleGet(*entry.Log.SearchConfig, &entry.Log)
 		}
 	}
+
+	pprof.StopCPUProfile()
 
 	if err := scanner.Err(); err != nil {
 		panic(err)
@@ -390,6 +385,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		return
 	}
 	defer resp.Body.Close()
+	return
 	fmt.Println("Request", logEntry.ID)
 
 	body, _ := io.ReadAll(resp.Body)
@@ -520,7 +516,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 		if logEntry.MinNumberSeats != nil {
 
-			seatsIndex, err := memory.GetNumberOfSeatsIndex(*logEntry.MinNumberSeats)
+			seatsIndex, err := memory.GetMinNumberOfSeatsIndex(*logEntry.MinNumberSeats)
 
 			if err != nil {
 				fmt.Println("Error getting Seats", iid, offer.NumberSeats, *logEntry.MinNumberSeats)

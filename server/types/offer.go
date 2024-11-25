@@ -7,7 +7,7 @@ type Offer struct {
 	MostSpecificRegionID int32  `json:"mostSpecificRegionID"`
 	StartDate            int64  `json:"startDate"`
 	EndDate              int64  `json:"endDate"`
-	NumberSeats          int    `json:"numberSeats"`
+	NumberSeats          int32  `json:"numberSeats"`
 	Price                int32  `json:"price"`
 	CarType              string `json:"carType"`
 	HasVollkasko         bool   `json:"hasVollkasko"`
