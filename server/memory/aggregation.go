@@ -86,8 +86,8 @@ func getPriceRangeAggregation(opts *types.GetParams,
 
 			if kilometer, ok = freeKilometerRange[freeKilometers]; !ok {
 				kilometer = &types.FreeKilometerRange{
-					Start: uint(freeKilometers),
-					End:   uint(freeKilometers + minFreeKilometerWidth),
+					Start: int(freeKilometers),
+					End:   int(freeKilometers + minFreeKilometerWidth),
 					Count: 0,
 				}
 				freeKilometerRange[freeKilometers] = kilometer
@@ -118,7 +118,7 @@ func getPriceRangeAggregation(opts *types.GetParams,
 
 			if seat, ok = seatsCount[seats]; !ok {
 				seat = &types.SeatsCount{
-					NumberSeats: uint(seats),
+					NumberSeats: int(seats),
 					Count:       0,
 				}
 				seatsCount[seats] = seat
@@ -134,8 +134,8 @@ func getPriceRangeAggregation(opts *types.GetParams,
 
 			if rang, ok = priceRange[price]; !ok {
 				rang = &types.PriceRange{
-					Start: uint(price),
-					End:   uint(price + priceRangeWidth),
+					Start: int(price),
+					End:   int(price + priceRangeWidth),
 					Count: 0,
 				}
 				priceRange[price] = rang

@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -381,127 +382,269 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 	json.Unmarshal(body, &result)
 
 	var expectedResult GetResponse
-	var actualResult GetResponse
 
 	json.Unmarshal(*log.ExpectedResult, &expectedResult)
-	json.Unmarshal(*log.ActualResult, &actualResult)
 
-	hasError := false
+	if len(expectedResult.Offers) != len(result.Offers) {
+		fmt.Println("Offers differ: Expected:", len(expectedResult.Offers), "Actual:", len(result.Offers), expectedResult.Offers, result.Offers)
+		fmt.Println(result.Offers)
+	} else {
+		fmt.Println("Offers correct length", result.Offers)
+	}
 
-	for i, value := range expectedResult.Offers {
-		if i >= len(actualResult.Offers) {
-			hasError = true
+	for i, value := range result.Offers {
 
-			if i == len(actualResult.Offers) {
-				fmt.Println("Offers differ: Expected:", len(expectedResult.Offers), "Actual:", len(actualResult.Offers), expectedResult.Offers)
+		if i < len(expectedResult.Offers) {
+			other := expectedResult.Offers[i]
+
+			if (value.ID != other.OfferID) || (other.IsDataCorrect == false) {
+				fmt.Println("Offer differ ", value.ID, other.OfferID)
+
 			}
+		}
 
-			iid, found := memory.IIDMap[value.OfferID]
+		iid, found := memory.IIDMap[value.ID]
 
-			if !found {
-				fmt.Println("IID not found", value.OfferID)
-				continue
-			}
+		if !found {
+			fmt.Println("IID not found", value.ID)
+			os.Exit(1)
+		}
 
-			offer, found := memory.OfferMap[iid]
+		offer, found := memory.OfferMap[iid]
 
-			if !found {
-				fmt.Println("IID not found", value.OfferID, iid)
-				continue
-			}
+		if !found {
+			fmt.Println("IID not found", value.ID, iid)
+			os.Exit(1)
+		}
 
-			fmt.Println("Offer found", value.OfferID)
-			spew.Dump(offer)
+		fmt.Println("Offer found", value.ID)
+		spew.Dump(params)
+		spew.Dump(offer)
 
-			startDays := memory.MillisecondsToDays(offer.StartDate)
-			endDays := memory.MillisecondsToDays(offer.EndDate)
-			days := memory.MillisecondsToDays(offer.EndDate - offer.StartDate)
+		startDays := memory.MillisecondsToDays(parseTimestampToMillis(logEntry.StartRange))
+		endDays := memory.MillisecondsToDays(parseTimestampToMillis(logEntry.EndRange))
+		days := logEntry.NumberDays
 
-			bit, err := memory.DaysIndexMap[days].GetBit(int(iid))
+		daysBit, err := memory.DaysIndexMap[days].GetBit(int(iid))
 
-			if err != nil {
-				fmt.Println("Error getting bit", iid, days)
-			}
+		if err != nil {
+			fmt.Println("Error getting bit", iid, days)
+			os.Exit(1)
+		}
 
-			if bit == 0 {
-				fmt.Println("not found in DaysIndexMap", iid, days)
-			} else {
-				fmt.Println("found in DaysIndexMap", iid, days)
-			}
+		if daysBit == 0 {
+			fmt.Println("not found in DaysIndexMap", iid, days)
+			os.Exit(1)
+		} else {
+			fmt.Println("found in DaysIndexMap", iid, days)
+		}
 
-			iidsStartDay, err := memory.StartTree.Get(startDays)
+		found = false
 
-			if err != nil {
-				fmt.Println("Error getting days", startDays)
-			}
+		memory.StartTree.GreaterThanEqual(int32(startDays), func(key int32, iids []int32) {
+			found = found || slices.Contains(iids, iid)
+		})
 
-			if !slices.Contains(iidsStartDay, iid) {
-				fmt.Println("not found in StartTree", iid, startDays)
-			} else {
-				fmt.Println("found in StartTree", iid, startDays)
-			}
+		if found {
+			fmt.Println("StartDate correct", iid, offer.StartDate, logEntry.StartRange)
+		} else {
+			fmt.Println("StartDate incorrect", iid, offer.StartDate, logEntry.StartRange)
+		}
 
-			iidsEndDay, err := memory.EndTree.Get(endDays)
+		found = false
 
-			if err != nil {
-				fmt.Println("Error getting days", endDays)
-			}
+		memory.EndTree.LessThanEqual(int32(endDays), func(key int32, iids []int32) {
+			found = found || slices.Contains(iids, iid)
+		})
 
-			if !slices.Contains(iidsEndDay, iid) {
-				fmt.Println("not found in EndTree", iid, endDays)
-			} else {
-				fmt.Println("found in EndTree", iid, endDays)
-			}
+		if found {
+			fmt.Println("EndDate correct", iid, offer.EndDate, logEntry.EndRange)
+		} else {
+			fmt.Println("EndDate incorrect", iid, offer.EndDate, logEntry.EndRange)
+		}
+
+		if logEntry.OnlyVollkasko != nil {
 
 			vollkasko, err := memory.VollkaskoIndex.GetBit(int(iid))
 
 			if err != nil {
 				fmt.Println("Error getting Vollkasko", iid)
+				os.Exit(1)
 			}
 
-			if vollkasko == 1 && offer.HasVollkasko {
-				fmt.Println("Vollkasko correct", iid)
+			if (vollkasko == 1 && offer.HasVollkasko) || (vollkasko == 0 && !offer.HasVollkasko) || (*logEntry.OnlyVollkasko && !offer.HasVollkasko) {
+				fmt.Println("Vollkasko correct", iid, vollkasko, offer.HasVollkasko, *logEntry.OnlyVollkasko)
 			} else {
-				fmt.Println("Vollkasko incorrect", iid, vollkasko, offer.HasVollkasko)
-			}
-
-			break
-		} else {
-
-			other := actualResult.Offers[i]
-
-			if (value.OfferID != other.OfferID) || (value.IsDataCorrect != other.IsDataCorrect) {
-				fmt.Print("Offer differ ", value.OfferID, other.OfferID)
-				hasError = true
+				fmt.Println("Vollkasko incorrect", iid, vollkasko, offer.HasVollkasko, *logEntry.OnlyVollkasko)
+				os.Exit(1)
 			}
 		}
+
+		if logEntry.CarType != nil {
+
+			carTypeIndex := memory.GetCarTypeIndex(*logEntry.CarType)
+
+			carType, err := carTypeIndex.GetBit(int(iid))
+
+			if err != nil {
+				fmt.Println("Error getting CarType", iid, offer.CarType, *logEntry.CarType)
+				os.Exit(1)
+			}
+
+			if carType == 1 {
+				fmt.Println("CarType correct", iid, carType, offer.CarType, *logEntry.CarType)
+			} else {
+				fmt.Println("CarType incorrect", iid, carType, offer.CarType, *logEntry.CarType)
+				os.Exit(1)
+			}
+		}
+
+		if logEntry.MinNumberSeats != nil {
+
+			seatsIndex, err := memory.GetNumberOfSeatsIndex(*logEntry.MinNumberSeats)
+
+			if err != nil {
+				fmt.Println("Error getting Seats", iid, offer.NumberSeats, *logEntry.MinNumberSeats)
+				os.Exit(1)
+			}
+
+			seats, err := seatsIndex.GetBit(int(iid))
+
+			if err != nil {
+				fmt.Println("Error getting Seats", iid, offer.NumberSeats, *logEntry.MinNumberSeats)
+				os.Exit(1)
+			}
+
+			if seats == 1 {
+				fmt.Println("Seats correct", iid, seats, offer.NumberSeats, *logEntry.MinNumberSeats)
+			} else {
+				fmt.Println("Seats incorrect", iid, seats, offer.NumberSeats, *logEntry.MinNumberSeats)
+				os.Exit(1)
+			}
+		}
+
+		if (logEntry.MinPrice != nil) && (logEntry.MaxPrice != nil) {
+
+			found = false
+
+			memory.PriceTree.LessThanEqual(int32(*logEntry.MaxPrice), func(key int32, iids []int32) {
+				found = found || slices.Contains(iids, iid)
+			})
+
+			if found {
+				fmt.Println("MaxPrice correct", iid, offer.Price, *logEntry.MaxPrice)
+			} else {
+				fmt.Println("MaxPrice incorrect", iid, offer.Price, *logEntry.MaxPrice)
+				os.Exit(1)
+			}
+
+			found = false
+
+			memory.PriceTree.GreaterThanEqual(int32(*logEntry.MinPrice), func(key int32, iids []int32) {
+				found = found || slices.Contains(iids, iid)
+			})
+
+			if found {
+				fmt.Println("MinPrice correct", iid, offer.Price, *logEntry.MinPrice)
+			} else {
+				fmt.Println("MinPrice incorrect", iid, offer.Price, *logEntry.MinPrice)
+				os.Exit(1)
+			}
+
+		}
+
+		region, err := memory.RegionTree.Get(int32(offer.MostSpecificRegionID))
+
+		if err != nil {
+			fmt.Println("Error getting Region", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+			os.Exit(1)
+		}
+
+		if slices.Contains(region, iid) {
+			fmt.Println("Region correct", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+		} else {
+			fmt.Println("Region incorrect", iid, offer.MostSpecificRegionID, logEntry.RegionID)
+			os.Exit(1)
+		}
+
+		found = false
 
 	}
 
 	for key, value := range expectedResult.CarTypeCounts {
-		other := actualResult.CarTypeCounts[key]
+		var other int
+		if key == "small" {
+			other = result.CarTypeCounts.Small
+		}
 
-		if value != other {
+		if key == "sports" {
+			other = result.CarTypeCounts.Sports
+		}
+
+		if key == "luxury" {
+			other = result.CarTypeCounts.Luxury
+		}
+
+		if key == "family" {
+			other = result.CarTypeCounts.Family
+		}
+
+		if value != (other) {
 			fmt.Println("CarTypeCount differ", key, value, other)
-			hasError = true
+			os.Exit(1)
 		}
 	}
 
-	for key, value := range expectedResult.SeatsCounts {
-		other := actualResult.SeatsCounts[key]
+	if len(expectedResult.SeatsCounts) > len(result.SeatsCount) {
+		fmt.Println("SeatsCount differ: Expected:", len(expectedResult.SeatsCounts), "Actual:", len(result.SeatsCount), expectedResult.SeatsCounts)
+		os.Exit(1)
+	}
 
-		if value != other {
-			fmt.Println("SeatsCount differ", key, value, other)
-			hasError = true
+	for seatTypeString, value := range expectedResult.SeatsCounts {
+		numberSeats, _ := strconv.ParseInt(seatTypeString, 10, 32)
+
+		found := false
+
+		for _, seat := range result.SeatsCount {
+			if seat.NumberSeats == int(numberSeats) {
+				if value != int(seat.Count) {
+					fmt.Println("SeatsCount differ", seat.NumberSeats, value, seat)
+					os.Exit(1)
+
+					if seat.NumberSeats != int(numberSeats) {
+						fmt.Println("SeatsCount differ2", seat.NumberSeats, value, seat)
+						os.Exit(1)
+					}
+
+					if value != int(seat.Count) {
+						fmt.Println("SeatsCount differ", seat.NumberSeats, value, seat)
+						os.Exit(1)
+					}
+				} else {
+					fmt.Println("SeatsCount correct", seat.NumberSeats, seat.Count, value)
+				}
+
+				found = true
+
+				break
+			}
 		}
+
+		if !found {
+
+			spew.Dump(result.SeatsCount)
+			fmt.Println("SeatsCount not found", numberSeats, expectedResult.SeatsCounts)
+			os.Exit(1)
+		}
+
 	}
 
 	for i, value := range expectedResult.FreeKilometerRanges {
-		if i >= len(actualResult.FreeKilometerRanges) {
-			fmt.Println("FreeKilometerRanges differ: Expected:", len(expectedResult.FreeKilometerRanges), "Actual:", len(actualResult.FreeKilometerRanges), expectedResult.FreeKilometerRanges)
-			break
+		if i >= len(result.FreeKilometerRange) {
+			fmt.Println("FreeKilometerRanges differ: Expected:", len(expectedResult.FreeKilometerRanges), "Actual:", len(result.FreeKilometerRange), expectedResult.FreeKilometerRanges)
+			os.Exit(1)
 		}
-		other := actualResult.FreeKilometerRanges[i]
+		other := result.FreeKilometerRange[i]
 
 		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
 			fmt.Print("FreeKilometerRange differ ")
@@ -509,16 +652,16 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 			fmt.Print("Count: ", value.Count, other.Count)
 			fmt.Print("Start: ", value.Start, other.Start)
 			fmt.Print("End: ", value.End, other.End)
-			hasError = true
+			os.Exit(1)
 		}
 	}
 
 	for i, value := range expectedResult.PriceRanges {
-		if i >= len(actualResult.PriceRanges) {
-			fmt.Println("PriceRanges differ: Expected:", len(expectedResult.PriceRanges), "Actual:", len(actualResult.PriceRanges), expectedResult.PriceRanges)
-			break
+		if i >= len(result.PriceRanges) {
+			fmt.Println("PriceRanges differ: Expected:", len(expectedResult.PriceRanges), "Actual:", len(result.PriceRanges), expectedResult.PriceRanges)
+			os.Exit(1)
 		}
-		other := actualResult.PriceRanges[i]
+		other := result.PriceRanges[i]
 
 		if (value.Count != other.Count) || (value.End != other.End) || (value.Start != other.Start) {
 			fmt.Print("PriceRange differ ")
@@ -526,12 +669,9 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 			fmt.Print("Count: ", value.Count, other.Count)
 			fmt.Print("Start: ", value.Start, other.Start)
 			fmt.Print("End: ", value.End, other.End)
-			hasError = true
-		}
-	}
+			os.Exit(1)
 
-	if hasError {
-		os.Exit(1)
+		}
 	}
 
 }

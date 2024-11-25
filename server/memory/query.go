@@ -10,13 +10,11 @@ import (
 
 func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
-	result := NewBitArray(DEFAULT_BITLENGTHSIZE)
-	temp := NewBitArray(DEFAULT_BITLENGTHSIZE)
-
 	// -- -- -- required -- -- --
 
 	// region Checking
-	LogicalOrInPlace(result, whereRegionBoundsMatch(opts.RegionID))
+	result := whereRegionBoundsMatch(opts.RegionID)
+	temp := NewBitArray(result.size)
 
 	// check startDate
 	daysStart := MillisecondsToDays(opts.TimeRangeStart)
@@ -34,7 +32,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	LogicalAndInPlace(result, temp)
 
 	// check daysAmount
-	amountDays := daysEnd - daysStart
+	amountDays := opts.NumberDays
 
 	if int(amountDays) > len(DaysIndexMap) {
 		// TODO: dynamically calculate the days map
@@ -47,34 +45,33 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	vollkaskoInital := result
 	priceRangeInital := result
+	priceRangeMinInital := result
 	carTypeInital := result
 	numberSeatsInital := result
 	freeKilometersInital := result
 
 	// CarType
 	if opts.CarType.Valid {
-		carTypeInital = LogicalAnd(result, whereCarTypIs(opts.CarType.String))
-	}
-
-	if opts.MinPrice.Valid || opts.MaxPrice.Valid {
-		priceRangeInital = result.Copy()
+		carTypeInital = LogicalAnd(result, GetCarTypeIndex(opts.CarType.String))
 	}
 
 	// MaxPrice
 	if opts.MaxPrice.Valid {
+		priceRangeInital = NewBitArray(result.size)
 		PriceTree.BitArrayLessThan(opts.MaxPrice.Int32, priceRangeInital)
 	}
 
 	// MinPrice
 	if opts.MinPrice.Valid {
-		copy := priceRangeInital.Copy()
-		PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, copy)
-		LogicalAndInPlace(priceRangeInital, copy)
+		priceRangeMinInital = NewBitArray(result.size)
+
+		PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32, priceRangeMinInital)
+		LogicalAndInPlace(priceRangeInital, priceRangeMinInital)
 	}
 
 	// MinFreeKilometer
 	if opts.MinFreeKilometer.Valid {
-		freeKilometersInital = result.Copy()
+		freeKilometersInital = NewBitArray(result.size)
 		KilometerTree.BitArrayGreaterEqual(opts.MinFreeKilometer.Int32, freeKilometersInital)
 	}
 
@@ -85,7 +82,7 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// MinNumberSeats
 	if opts.MinNumberSeats.Valid && opts.MinNumberSeats.Int32 > 0 {
-		seats, err := whereNumberOfSeatsIs(int(opts.MinNumberSeats.Int32))
+		seats, err := GetNumberOfSeatsIndex(int(opts.MinNumberSeats.Int32))
 		if err != nil {
 			return nil, err
 		}
@@ -179,14 +176,14 @@ func whereHasVollkaskoIsTrue() *BitArray {
 	return &VollkaskoIndex
 }
 
-func whereNumberOfSeatsIs(amount int) (*BitArray, error) {
+func GetNumberOfSeatsIndex(amount int) (*BitArray, error) {
 	if amount >= len(SeatIndexMap) {
 		return nil, fmt.Errorf("amount of seats is too high")
 	}
 	return &SeatIndexMap[amount], nil
 }
 
-func whereCarTypIs(cartype string) *BitArray {
+func GetCarTypeIndex(cartype string) *BitArray {
 	switch cartype {
 	case "family":
 		return &FamilyCarIndex
@@ -229,6 +226,9 @@ func collectOfferJSONSorted(ba *BitArray, offerMap map[int32]*types.Offer, sortA
 		if bit == 1 {
 			if offer, exists := offerMap[int32(i)]; exists {
 				results = append(results, *offer)
+			} else {
+				fmt.Println("Offer not found for IID", i)
+				return nil, fmt.Errorf("Offer not found for IID %d", i)
 			}
 		}
 	}

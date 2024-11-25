@@ -47,6 +47,7 @@ func InsertOffer(offer *types.Offer) {
 	OfferMap[offer.IID] = offer
 	PriceTree.Add(offer.Price, offer.IID)
 
+	indexKillometer(offer)
 	indexVollkasko(offer)
 	indexCarType(offer)
 	indexNumSeats(offer)

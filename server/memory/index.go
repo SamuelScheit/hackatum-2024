@@ -57,6 +57,10 @@ func InitIndex() {
 	}
 }
 
+func indexKillometer(offer *types.Offer) {
+	KilometerTree.Add(offer.FreeKilometers, offer.IID)
+}
+
 func indexVollkasko(offer *types.Offer) {
 	if offer.HasVollkasko {
 		VollkaskoIndex.SetBit(int(offer.IID))
@@ -64,16 +68,8 @@ func indexVollkasko(offer *types.Offer) {
 }
 
 func indexCarType(offer *types.Offer) {
-	switch offer.CarType {
-	case "family":
-		FamilyCarIndex.SetBit(int(offer.IID))
-	case "sports":
-		SportsCarIndex.SetBit(int(offer.IID))
-	case "luxury":
-		LuxuryCarIndex.SetBit(int(offer.IID))
-	case "small":
-		SmallCarIndex.SetBit(int(offer.IID))
-	}
+	index := GetCarTypeIndex(offer.CarType)
+	index.SetBit(int(offer.IID))
 }
 
 func indexNumSeats(offer *types.Offer) {
@@ -89,7 +85,6 @@ func indexDays(offer *types.Offer) {
 	amountDays := MillisecondsToDays(offer.EndDate - offer.StartDate)
 
 	DaysIndexMap[amountDays].SetBit(int(offer.IID))
-
 }
 
 func indexRegion(offer *types.Offer) {

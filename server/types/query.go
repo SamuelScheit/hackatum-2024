@@ -10,30 +10,30 @@ type QueryResponse struct {
 }
 
 type PriceRange struct {
-	Start uint `json:"start"`
-	End   uint `json:"end"`
-	Count uint `json:"count"`
+	Start int `json:"start"`
+	End   int `json:"end"`
+	Count int `json:"count"`
 }
 
 type CarTypeCount struct {
-	Small  uint `json:"small"`
-	Sports uint `json:"sports"`
-	Luxury uint `json:"luxury"`
-	Family uint `json:"family"`
+	Small  int `json:"small"`
+	Sports int `json:"sports"`
+	Luxury int `json:"luxury"`
+	Family int `json:"family"`
 }
 
 type SeatsCount struct {
-	NumberSeats uint `json:"numberSeats"`
-	Count       uint `json:"count"`
+	NumberSeats int `json:"numberSeats"`
+	Count       int `json:"count"`
 }
 
 type FreeKilometerRange struct {
-	Start uint `json:"start"`
-	End   uint `json:"end"`
-	Count uint `json:"count"`
+	Start int `json:"start"`
+	End   int `json:"end"`
+	Count int `json:"count"`
 }
 
 type VollkaskoCount struct {
-	TrueCount  uint `json:"trueCount"`
-	FalseCount uint `json:"falseCount"`
+	TrueCount  int `json:"trueCount"`
+	FalseCount int `json:"falseCount"`
 }
