@@ -111,19 +111,12 @@ func LogicalOr(ba1, ba2 *BitArray) *BitArray {
 
 	result := NewBitArray(maxSize)
 
-	for i := range result.data {
-		word1 := uint64(0)
-		word2 := uint64(0)
-
-		if i < len(ba1.data) {
-			word1 = ba1.data[i]
-		}
-		if i < len(ba2.data) {
-			word2 = ba2.data[i]
-		}
-
-		result.data[i] = word1 | word2
+	for i := 0; i < len(ba1.data) && i < len(ba2.data); i++ {
+		result.data[i] = ba1.data[i] | ba2.data[i]
 	}
+
+	result.size = maxSize
+	result.ensureCapacity(maxSize)
 
 	return result
 }

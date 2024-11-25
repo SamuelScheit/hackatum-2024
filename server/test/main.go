@@ -384,6 +384,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 		fmt.Printf("Failed to make GET request: %v\n", err)
 		return
 	}
+	return
 	defer resp.Body.Close()
 	fmt.Println("Request", logEntry.ID)
 

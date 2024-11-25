@@ -79,11 +79,6 @@ func GetRegionBounds(region uint) (uint, uint, uint, uint) {
 	return r.Min, r.Max, r.Min, r.Max
 }
 
-func IsInRegion(region uint, x uint) bool {
-	min, max, _, _ := GetRegionBounds(region)
-	return x >= min && x <= max
-}
-
 func printRegionStructure(region Region, level int) {
 	// Indentation based on level to show hierarchy
 	indent := ""

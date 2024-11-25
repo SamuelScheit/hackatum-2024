@@ -168,10 +168,7 @@ func whereRegionBoundsMatch(regionID uint) *BitArray {
 	temp2 = LogicalAnd(temp2, temp3)                     // temp2 = (x > min2) AND (x < max2)
 
 	// Combine both ranges with OR
-	LogicalOrInPlace(temp1, temp2) // temp1 = ((x > min) AND (x < max)) OR ((x > min2) AND (x < max2))
-
-	// Return the final result
-	return temp1
+	return LogicalOr(temp1, temp2) // temp1 = ((x > min) AND (x < max)) OR ((x > min2) AND (x < max2))
 }
 
 func whereHasVollkaskoIsTrue() *BitArray {
