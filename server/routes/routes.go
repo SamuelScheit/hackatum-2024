@@ -2,7 +2,6 @@ package routes
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/valyala/fasthttp"
 )
@@ -29,10 +28,14 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func Serve() {
-	err := fasthttp.ListenAndServe(":80", fastHTTPHandler)
+	server := &fasthttp.Server{
+		Handler:            fastHTTPHandler,
+		MaxRequestBodySize: 20 * 1024 * 1024, // 20MB
+	}
+
+	err := server.ListenAndServe(":80")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Server started on port 80")
 }
