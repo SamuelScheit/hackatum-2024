@@ -27,13 +27,23 @@ func InsertOffers(offers *[]types.Offer) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	for _, offer := range *offers {
-		InsertOffer(&offer)
+	copyOfferMap := make(map[int32]*types.Offer, len(OfferMap))
+	for k, v := range OfferMap {
+		copyOfferMap[k] = v
 	}
+
+	OfferMap = copyOfferMap
+
+	for _, offer := range *offers {
+		InsertOffer(&offer, copyOfferMap)
+	}
+
+	OfferMap = copyOfferMap
+
 	return nil
 }
 
-func InsertOffer(offer *types.Offer) {
+func InsertOffer(offer *types.Offer, copyOfferMap map[int32]*types.Offer) {
 	if offer.IID == 0 {
 		IIDCounter++
 		offer.IID = IIDCounter
@@ -44,14 +54,7 @@ func InsertOffer(offer *types.Offer) {
 		ID:   offer.ID,
 		Data: offer.Data,
 	}
-	copyOfferMap := make(map[int32]*types.Offer, len(OfferMap))
-	for k, v := range OfferMap {
-		copyOfferMap[k] = v
-	}
-
 	copyOfferMap[offer.IID] = offer
-
-	OfferMap = copyOfferMap
 
 	PriceTree.Add(offer.Price, offer.IID)
 
