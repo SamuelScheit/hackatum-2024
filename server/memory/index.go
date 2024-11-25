@@ -18,7 +18,7 @@ var SportsCarIndex BitArray
 var SmallCarIndex BitArray
 
 // numSeats
-var SeatIndexMap []BitArray
+var MinSeatIndexMap []BitArray
 
 // days
 var DaysIndexMap []BitArray
@@ -50,10 +50,10 @@ func InitIndex() {
 	SportsCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	SmallCarIndex = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 
-	SeatIndexMap = make([]BitArray, 10)
+	MinSeatIndexMap = make([]BitArray, 10)
 
-	for i := 0; i < len(SeatIndexMap); i++ {
-		SeatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
+	for i := 0; i < len(MinSeatIndexMap); i++ {
+		MinSeatIndexMap[i] = *NewBitArray(DEFAULT_BITLENGTHSIZE)
 	}
 }
 
@@ -73,12 +73,15 @@ func indexCarType(offer *types.Offer) {
 }
 
 func indexNumSeats(offer *types.Offer) {
-	if int32(offer.NumberSeats) >= int32(len(SeatIndexMap)) {
-		for i := len(SeatIndexMap); i <= int(offer.NumberSeats); i++ {
-			SeatIndexMap = append(SeatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
+	if int32(offer.NumberSeats) >= int32(len(MinSeatIndexMap)) {
+		for i := len(MinSeatIndexMap); i <= int(offer.NumberSeats); i++ {
+			MinSeatIndexMap = append(MinSeatIndexMap, *NewBitArray(DEFAULT_BITLENGTHSIZE))
 		}
 	}
-	SeatIndexMap[offer.NumberSeats].SetBit(int(offer.IID))
+
+	for i := offer.NumberSeats; i < len(MinSeatIndexMap); i++ {
+		MinSeatIndexMap[i].SetBit(int(offer.IID))
+	}
 }
 
 func indexDays(offer *types.Offer) {

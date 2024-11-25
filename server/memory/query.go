@@ -177,10 +177,10 @@ func whereHasVollkaskoIsTrue() *BitArray {
 }
 
 func GetNumberOfSeatsIndex(amount int) (*BitArray, error) {
-	if amount >= len(SeatIndexMap) {
+	if amount >= len(MinSeatIndexMap) {
 		return nil, fmt.Errorf("amount of seats is too high")
 	}
-	return &SeatIndexMap[amount], nil
+	return &MinSeatIndexMap[amount], nil
 }
 
 func GetCarTypeIndex(cartype string) *BitArray {
