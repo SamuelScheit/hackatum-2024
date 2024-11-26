@@ -6,14 +6,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 )
 
 func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// -- -- -- required -- -- --
 
+	start := time.Now()
+
 	// region Checking
 	result := whereRegionBoundsMatch(opts.RegionID)
+
+	fmt.Println("Region Bounds Match took: ", time.Since(start))
 
 	// check startDate
 	daysStart := MillisecondsToDays(opts.TimeRangeStart)
@@ -38,6 +43,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	LogicalAndInPlace(result, &DaysIndexMap[amountDays])
 
+	fmt.Println("required filters took: ", time.Since(start))
+
 	// -- -- -- optional -- -- --
 
 	vollkaskoInital := result
@@ -45,6 +52,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	carTypeInital := result
 	numberSeatsInital := result
 	freeKilometersInital := result
+
+	start = time.Now()
 
 	// CarType
 	if opts.CarType.Valid {
@@ -81,7 +90,13 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 		numberSeatsInital = LogicalAnd(result, seats)
 	}
 
+	fmt.Println("optional filters took: ", time.Since(start))
+
+	start = time.Now()
+
 	response := getAggregation(opts, priceRangeInital, carTypeInital, numberSeatsInital, freeKilometersInital, vollkaskoInital)
+
+	fmt.Println("aggregation took: ", time.Since(start))
 
 	if opts.CarType.Valid {
 		LogicalAndInPlace(result, carTypeInital)
@@ -105,6 +120,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 
 	// result = pagination(result, opts.Page, opts.PageSize)
 
+	start = time.Now()
+
 	searchResults, err := collectOfferJSONSorted(result, OfferMap, opts.SortOrder == 0)
 
 	searchResults = paginationArray(searchResults, opts.Page, opts.PageSize)
@@ -114,6 +131,8 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	}
 
 	response.Offers = searchResults
+
+	fmt.Println("collecting offers took: ", time.Since(start))
 
 	return response, nil
 }
