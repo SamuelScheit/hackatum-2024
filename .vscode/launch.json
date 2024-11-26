@@ -10,7 +10,10 @@
 			"request": "launch",
 			"mode": "auto",
 			"program": "${workspaceFolder}/server/test/",
-			"buildFlags": "-tags=sqlite_math_functions"
+			"buildFlags": "-tags=sqlite_math_functions",
+			"env": {
+				"GOMAXPROCS": "1"
+			}
 		}
 	]
 }

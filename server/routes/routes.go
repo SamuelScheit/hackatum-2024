@@ -32,7 +32,7 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 
 	fmt.Println(string(ctx.Method()), "Request took: ", time.Since(start))
 
-	time.Sleep(10 * time.Millisecond)
+	// time.Sleep(10 * time.Millisecond)
 }
 
 func Serve() {
