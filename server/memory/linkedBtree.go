@@ -66,44 +66,44 @@ func (t *LinkedBtree) Add(key, value int32) {
 	// delete(t.cLessThan, key)
 	// delete(t.cLessEqual, key)
 
-	for k, v := range t.cGreaterEqual {
-		if k >= key {
-			v.SetBit(int(value))
-		}
-	}
-
-	for k, v := range t.cLessThan {
-		if k < key {
-			v.SetBit(int(value))
-		}
-	}
-
-	for k, v := range t.cLessEqual {
-		if k <= key {
-			v.SetBit(int(value))
-		}
-	}
-
-	// t.cacheGreaterEqual.Range(func(k int32, v *BitArray) bool {
+	// for k, v := range t.cGreaterEqual {
 	// 	if k >= key {
 	// 		v.SetBit(int(value))
 	// 	}
-	// 	return true
-	// })
+	// }
 
-	// t.cacheLessThan.Range(func(k int32, v *BitArray) bool {
+	// for k, v := range t.cLessThan {
 	// 	if k < key {
 	// 		v.SetBit(int(value))
 	// 	}
-	// 	return true
-	// })
+	// }
 
-	// t.cacheLessEqual.Range(func(k int32, v *BitArray) bool {
+	// for k, v := range t.cLessEqual {
 	// 	if k <= key {
 	// 		v.SetBit(int(value))
 	// 	}
-	// 	return true
-	// })
+	// }
+
+	t.cacheGreaterEqual.Range(func(k int32, v *BitArray) bool {
+		if k >= key {
+			v.SetBit(int(value))
+		}
+		return true
+	})
+
+	t.cacheLessThan.Range(func(k int32, v *BitArray) bool {
+		if k < key {
+			v.SetBit(int(value))
+		}
+		return true
+	})
+
+	t.cacheLessEqual.Range(func(k int32, v *BitArray) bool {
+		if k <= key {
+			v.SetBit(int(value))
+		}
+		return true
+	})
 
 }
 
@@ -144,50 +144,50 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 	})
 }
 
-// func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
-// 	value, _ := t.cacheGreaterEqual.LoadOrCompute(key, func() *BitArray {
-// 		value := NewBitArray(t.Size)
-// 		t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
-// 			for _, iid := range iids {
-// 				value.SetBit(int(iid))
-// 			}
-// 		})
+func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
+	value, _ := t.cacheGreaterEqual.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
+		t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
 
-// 		return value
-// 	})
+		return value
+	})
 
-// 	return value
-// }
+	return value
+}
 
-// func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
-// 	value, _ := t.cacheLessThan.LoadOrCompute(key, func() *BitArray {
-// 		value := NewBitArray(t.Size)
+func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
+	value, _ := t.cacheLessThan.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
 
-// 		t.LessThan(key, func(key int32, iids []int32) {
-// 			for _, iid := range iids {
-// 				value.SetBit(int(iid))
-// 			}
-// 		})
-// 		return value
-// 	})
+		t.LessThan(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
+		return value
+	})
 
-// 	return value
-// }
+	return value
+}
 
-// func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
-// 	value, _ := t.cacheLessEqual.LoadOrCompute(key, func() *BitArray {
-// 		value := NewBitArray(t.Size)
+func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
+	value, _ := t.cacheLessEqual.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
 
-// 		t.LessThanEqual(key, func(key int32, iids []int32) {
-// 			for _, iid := range iids {
-// 				value.SetBit(int(iid))
-// 			}
-// 		})
-// 		return value
-// 	})
+		t.LessThanEqual(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
+		return value
+	})
 
-// 	return value
-// }
+	return value
+}
 
 // func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
 
@@ -225,55 +225,55 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 // 	return value
 // }
 
-func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
-	if value, exists := t.cGreaterEqual[key]; exists {
-		return value
-	}
+// func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
+// 	if value, exists := t.cGreaterEqual[key]; exists {
+// 		return value
+// 	}
 
-	value := NewBitArray(t.Size)
-	t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
-	})
+// 	value := NewBitArray(t.Size)
+// 	t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
 
-	t.cGreaterEqual[key] = value
+// 	t.cGreaterEqual[key] = value
 
-	return value
-}
+// 	return value
+// }
 
-func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
-	if value, exists := t.cLessThan[key]; exists {
-		return value
-	}
+// func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
+// 	if value, exists := t.cLessThan[key]; exists {
+// 		return value
+// 	}
 
-	value := NewBitArray(t.Size)
+// 	value := NewBitArray(t.Size)
 
-	t.LessThan(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
-	})
+// 	t.LessThan(key, func(key int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
 
-	t.cLessThan[key] = value
+// 	t.cLessThan[key] = value
 
-	return value
-}
+// 	return value
+// }
 
-func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
-	if value, exists := t.cLessEqual[key]; exists {
-		return value
-	}
+// func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
+// 	if value, exists := t.cLessEqual[key]; exists {
+// 		return value
+// 	}
 
-	value := NewBitArray(t.Size)
+// 	value := NewBitArray(t.Size)
 
-	t.LessThanEqual(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
-	})
+// 	t.LessThanEqual(key, func(key int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
 
-	t.cLessEqual[key] = value
+// 	t.cLessEqual[key] = value
 
-	return value
-}
+// 	return value
+// }
