@@ -2,5 +2,7 @@ server/checkmate
 server/db.db
 server/db.db-shm
 server/db.db-wal
+cpu.prof
+server/test/*.log
 
 .DS_STORE

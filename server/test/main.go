@@ -399,6 +399,11 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 	var expectedResult GetResponse
 	var actualLogResult GetResponse
 
+	if log.ExpectedResult == nil {
+		fmt.Println("ExpectedResult is nil")
+		return
+	}
+
 	json.Unmarshal(*log.ExpectedResult, &expectedResult)
 	if log.ActualResult == nil {
 		fmt.Println("ActualResult is nil")
