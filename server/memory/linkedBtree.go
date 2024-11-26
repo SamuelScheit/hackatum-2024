@@ -9,6 +9,9 @@ import (
 
 type LinkedBtree struct {
 	root              btree.Map[int32, []int32]
+	cGreaterEqual     map[int32]*BitArray
+	cLessThan         map[int32]*BitArray
+	cLessEqual        map[int32]*BitArray
 	cacheGreaterEqual *xsync.MapOf[int32, *BitArray]
 	cacheLessThan     *xsync.MapOf[int32, *BitArray]
 	cacheLessEqual    *xsync.MapOf[int32, *BitArray]
@@ -161,7 +164,46 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 // 	return value
 // }
 
+// func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
+
+// 	value := NewBitArray(t.Size)
+// 	t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
+
+// 	return value
+// }
+
+// func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
+// 	value := NewBitArray(t.Size)
+
+// 	t.LessThan(key, func(key int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
+
+// 	return value
+// }
+
+// func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
+// 	value := NewBitArray(t.Size)
+
+// 	t.LessThanEqual(key, func(key int32, iids []int32) {
+// 		for _, iid := range iids {
+// 			value.SetBit(int(iid))
+// 		}
+// 	})
+
+// 	return value
+// }
+
 func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
+	if value, exists := t.cacheGreaterEqual.Load(key); exists {
+		return value
+	}
 
 	value := NewBitArray(t.Size)
 	t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
@@ -170,10 +212,16 @@ func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
 		}
 	})
 
+	t.cacheGreaterEqual.Store(key, value)
+
 	return value
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
+	if value, exists := t.cacheLessThan.Load(key); exists {
+		return value
+	}
+
 	value := NewBitArray(t.Size)
 
 	t.LessThan(key, func(key int32, iids []int32) {
@@ -182,10 +230,16 @@ func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
 		}
 	})
 
+	t.cacheLessThan.Store(key, value)
+
 	return value
 }
 
 func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
+	if value, exists := t.cacheLessEqual.Load(key); exists {
+		return value
+	}
+
 	value := NewBitArray(t.Size)
 
 	t.LessThanEqual(key, func(key int32, iids []int32) {
@@ -193,6 +247,8 @@ func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
 			value.SetBit(int(iid))
 		}
 	})
+
+	t.cacheLessEqual.Store(key, value)
 
 	return value
 }
