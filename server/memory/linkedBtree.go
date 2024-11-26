@@ -113,55 +113,46 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 }
 
 func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
-	// value, loaded := t.cacheGreaterEqual.LoadOrCompute(key, func() *BitArray {
-	// 	return NewBitArray(t.Size)
-	// })
+	value, _ := t.cacheGreaterEqual.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
+		t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
 
-	// if !loaded {
-	value := NewBitArray(t.Size)
-	t.GreaterThanEqual(key, func(key2 int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
+		return value
 	})
-	// }
 
 	return value
-	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
-	// value, loaded := t.cacheLessThan.LoadOrCompute(key, func() *BitArray {
-	// 	return NewBitArray(t.Size)
-	// })
-	value := NewBitArray(t.Size)
+	value, _ := t.cacheLessThan.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
 
-	// if !loaded {
-	t.LessThan(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
+		t.LessThan(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
+		return value
 	})
-	// }
 
 	return value
-	return value.Copy()
 }
 
 func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
-	// value, loaded := t.cacheLessEqual.LoadOrCompute(key, func() *BitArray {
-	// 	return NewBitArray(t.Size)
-	// })
-	value := NewBitArray(t.Size)
+	value, _ := t.cacheLessEqual.LoadOrCompute(key, func() *BitArray {
+		value := NewBitArray(t.Size)
 
-	// if !loaded {
-	t.LessThanEqual(key, func(key int32, iids []int32) {
-		for _, iid := range iids {
-			value.SetBit(int(iid))
-		}
+		t.LessThanEqual(key, func(key int32, iids []int32) {
+			for _, iid := range iids {
+				value.SetBit(int(iid))
+			}
+		})
+		return value
 	})
-	// }
 
 	return value
-	return value.Copy()
 }
