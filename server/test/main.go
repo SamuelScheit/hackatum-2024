@@ -415,6 +415,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 	if len(expectedResult.Offers) != len(result.Offers) {
 		fmt.Println("Offers incorrect: Expected:", len(expectedResult.Offers), "Actual:", len(result.Offers), expectedResult.Offers, result.Offers)
 		fmt.Println(result.Offers, logEntry.ID)
+		// os.Exit(1)
 	} else {
 		fmt.Println("Offers correct length", result.Offers)
 	}
@@ -451,7 +452,7 @@ func handleGet(searchConfig json.RawMessage, log *Log) {
 
 				spew.Dump(offer)
 				spew.Dump(otherOffer)
-
+				os.Exit(1)
 			}
 		}
 

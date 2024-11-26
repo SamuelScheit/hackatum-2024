@@ -39,8 +39,11 @@ func NewLinkedBtree() *LinkedBtree {
 			hashInt32,
 			xsync.WithGrowOnly(),
 		),
-		Size:  0,
-		mutex: sync.Mutex{},
+		cGreaterEqual: map[int32]*BitArray{},
+		cLessThan:     map[int32]*BitArray{},
+		cLessEqual:    map[int32]*BitArray{},
+		Size:          0,
+		mutex:         sync.Mutex{},
 	}
 }
 
@@ -55,9 +58,31 @@ func (t *LinkedBtree) Add(key, value int32) {
 	t.root.Set(key, keys)
 	t.Size++
 
-	t.cacheGreaterEqual.Delete(key)
-	t.cacheLessThan.Delete(key)
-	t.cacheLessEqual.Delete(key)
+	// t.cacheGreaterEqual.Delete(key)
+	// t.cacheLessThan.Delete(key)
+	// t.cacheLessEqual.Delete(key)
+
+	// delete(t.cGreaterEqual, key)
+	// delete(t.cLessThan, key)
+	// delete(t.cLessEqual, key)
+
+	for k, v := range t.cGreaterEqual {
+		if k >= key {
+			v.SetBit(int(value))
+		}
+	}
+
+	for k, v := range t.cLessThan {
+		if k < key {
+			v.SetBit(int(value))
+		}
+	}
+
+	for k, v := range t.cLessEqual {
+		if k <= key {
+			v.SetBit(int(value))
+		}
+	}
 
 	// t.cacheGreaterEqual.Range(func(k int32, v *BitArray) bool {
 	// 	if k >= key {
@@ -201,7 +226,7 @@ func (t *LinkedBtree) LessThanEqual(key int32, fn func(int32, []int32)) {
 // }
 
 func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
-	if value, exists := t.cacheGreaterEqual.Load(key); exists {
+	if value, exists := t.cGreaterEqual[key]; exists {
 		return value
 	}
 
@@ -212,13 +237,13 @@ func (t *LinkedBtree) BitArrayGreaterEqual(key int32) *BitArray {
 		}
 	})
 
-	t.cacheGreaterEqual.Store(key, value)
+	t.cGreaterEqual[key] = value
 
 	return value
 }
 
 func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
-	if value, exists := t.cacheLessThan.Load(key); exists {
+	if value, exists := t.cLessThan[key]; exists {
 		return value
 	}
 
@@ -230,13 +255,13 @@ func (t *LinkedBtree) BitArrayLessThan(key int32) *BitArray {
 		}
 	})
 
-	t.cacheLessThan.Store(key, value)
+	t.cLessThan[key] = value
 
 	return value
 }
 
 func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
-	if value, exists := t.cacheLessEqual.Load(key); exists {
+	if value, exists := t.cLessEqual[key]; exists {
 		return value
 	}
 
@@ -248,7 +273,7 @@ func (t *LinkedBtree) BitArrayLessEqual(key int32) *BitArray {
 		}
 	})
 
-	t.cacheLessEqual.Store(key, value)
+	t.cLessEqual[key] = value
 
 	return value
 }

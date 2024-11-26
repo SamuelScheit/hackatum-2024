@@ -10,6 +10,9 @@ import (
 )
 
 func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
+	mu.Lock()
+
+	defer mu.Unlock()
 
 	// -- -- -- required -- -- --
 
@@ -63,12 +66,13 @@ func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
 	// MaxPrice (exclusive)
 	if opts.MaxPrice.Valid {
 		priceRangeInital = PriceTree.BitArrayLessThan(opts.MaxPrice.Int32)
+
 	}
 
 	// MinPrice (inclusive)
 	if opts.MinPrice.Valid {
 		priceRangeMinInital := PriceTree.BitArrayGreaterEqual(opts.MinPrice.Int32)
-		LogicalAndInPlace(priceRangeInital, priceRangeMinInital)
+		priceRangeInital = LogicalAnd(priceRangeInital, priceRangeMinInital)
 	}
 
 	// MinFreeKilometer (inclusive)
