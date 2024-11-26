@@ -10,9 +10,6 @@ import (
 )
 
 func QuerySearchResults(opts *types.GetParams) (*types.QueryResponse, error) {
-	mu.Lock()
-
-	defer mu.Unlock()
 
 	// -- -- -- required -- -- --
 
